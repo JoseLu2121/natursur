@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getAllAppointmentTypes } from './api/appointmentTypes'
 
-export default function Dashboard() {
+export default function Dashboard({ session, onLogout }) {
   const [appointmentTypes, setAppointmentTypes] = useState([])
 
   useEffect(() => {
@@ -18,11 +19,17 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
-      <h2>Tipos de Citas</h2>
+      <h2>Bienvenido, {session.user.email}</h2>
+      <button onClick={onLogout}>Cerrar sesión</button>
+      <hr />
+
+      <h3>Tipos de Citas</h3>
       <ul>
         {appointmentTypes.map((type) => (
           <li key={type.id}>
-            {type.name} – {type.duration_minutes} min
+            <Link to={`/appointment-type/${type.id}`}>
+              {type.name} – {type.duration_minutes} min
+            </Link>
           </li>
         ))}
       </ul>

@@ -1,6 +1,8 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Dashboard from './Dashboard'
+import AppointmentTypeDetail from './AppointmentTypeDetail'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -32,7 +34,6 @@ export default function App() {
     e.preventDefault()
     setLoading(true)
     setErrorMessage(null)
-
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) setErrorMessage(error.message)
     setLoading(false)
@@ -42,7 +43,6 @@ export default function App() {
     e.preventDefault()
     setLoading(true)
     setErrorMessage(null)
-
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) setErrorMessage(error.message)
     setLoading(false)
@@ -91,6 +91,9 @@ export default function App() {
   }
 
   return (
-    <Dashboard session={session} onLogout={handleLogout} />
+    <Routes>
+      <Route path="/" element={<Dashboard session={session} onLogout={handleLogout} />} />
+      <Route path="/appointment-type/:typeId" element={<AppointmentTypeDetail />} />
+    </Routes>
   )
 }
