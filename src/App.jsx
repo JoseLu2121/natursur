@@ -90,10 +90,22 @@ export default function App() {
     )
   }
 
-  return (
-    <Routes>
-      <Route path="/" element={<Dashboard session={session} onLogout={handleLogout} />} />
-      <Route path="/appointment-type/:typeId" element={<AppointmentTypeDetail />} />
-    </Routes>
+    return (
+    <div className="app-container">
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+        <div className="w-full max-w-6xl p-4 md:p-8">
+          <Routes>
+            <Route
+              path="/"
+              element={<Dashboard session={session} onLogout={handleLogout} />}
+            />
+            <Route
+              path="/appointment-type/:typeId"
+              element={<AppointmentTypeDetail />}
+            />
+          </Routes>
+        </div>
+      </div>
+    </div>
   )
 }
