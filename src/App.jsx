@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Dashboard from './Dashboard'
 import AppointmentTypeDetail from './AppointmentTypeDetail'
+import ProfilePage from './ProfilePage'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -103,6 +104,7 @@ export default function App() {
               path="/appointment-type/:typeId"
               element={<AppointmentTypeDetail />}
             />
+            <Route path="/profile" element={<ProfilePage session={session}/>} />
           </Routes>
         </div>
       </div>
