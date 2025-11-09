@@ -1,8 +1,12 @@
 // src/pages/ProfilePage.jsx
 import { useEffect, useState } from 'react'
 import { getUserById, updateUser } from './api/user'
-import { getAppointmentsByUser } from './api/appointments'
+import { getAppointmentsByUser, cancelAppointment, updateAppointment } from './api/appointments'
 import ProfileButton from './ProfileButton.jsx'
+import { useNavigate } from 'react-router-dom'
+
+
+
 
 export default function ProfilePage({ session }) {
   const userId = session?.user?.id
@@ -11,7 +15,10 @@ export default function ProfilePage({ session }) {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-
+  const [editingId, setEditingId] = useState(null)
+  const [editingDate, setEditingDate] = useState('')
+  const navigate = useNavigate()
+  // 🔹 Cargar perfil y citas
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -31,6 +38,7 @@ export default function ProfilePage({ session }) {
     if (userId) loadData()
   }, [userId])
 
+  // 🔹 Actualizar perfil
   const handleChange = (e) => {
     const { name, value } = e.target
     setUserData((prev) => ({ ...prev, [name]: value }))
@@ -50,14 +58,46 @@ export default function ProfilePage({ session }) {
     }
   }
 
+  // 🔹 Cancelar cita
+  const handleCancel = async (id) => {
+    if (!window.confirm('¿Seguro que deseas cancelar esta cita?')) return
+    try {
+      await cancelAppointment(id)
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, status: 'cancelled' } : a))
+      )
+    } catch (err) {
+      alert('Error al cancelar la cita: ' + err.message)
+    }
+  }
+
+  // 🔹 Editar cita (solo cambiar fecha/hora)
+  const handleEdit = async (id) => {
+    if (!editingDate) return alert('Selecciona una nueva fecha y hora')
+    try {
+      const start = new Date(editingDate)
+      const end = new Date(start.getTime() + 60 * 60 * 1000) // +1 hora
+      await updateAppointment(id, { start_at: start.toISOString(), end_at: end.toISOString() })
+      setAppointments((prev) =>
+        prev.map((a) =>
+          a.id === id ? { ...a, start_at: start.toISOString(), end_at: end.toISOString() } : a
+        )
+      )
+      setEditingId(null)
+      setEditingDate('')
+    } catch (err) {
+      alert('Error al editar la cita: ' + err.message)
+    }
+  }
+
   return (
     <div className="relative p-6 max-w-lg mx-auto">
-      {/* Botón de perfil para consistencia visual */}
       <ProfileButton />
 
       <h2 className="text-2xl font-semibold mb-2">Mi Perfil</h2>
       <p className="text-gray-600 mb-4">{userEmail}</p>
 
+      {/* === FORM PERFIL === */}
       <form onSubmit={handleSave} className="space-y-4 mb-6">
         <div>
           <label className="block text-sm font-medium">Nombre completo</label>
@@ -99,31 +139,51 @@ export default function ProfilePage({ session }) {
           {loading ? 'Guardando...' : 'Guardar cambios'}
         </button>
 
-        {message && (
-          <p className="mt-2 text-sm text-gray-700">{message}</p>
-        )}
+        {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}
       </form>
 
       <hr className="my-6" />
 
+      {/* === LISTA DE CITAS === */}
       <h3 className="text-xl font-semibold mb-2">Mis Citas</h3>
 
       {appointments.length === 0 ? (
         <p className="text-gray-500">No tienes citas registradas.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {appointments.map((appt) => (
             <li
               key={appt.id}
-              className="border rounded p-3 shadow-sm bg-white"
+              className="border rounded p-3 shadow-sm bg-white space-y-2"
             >
-              <p className="font-medium text-gray-800">
-                {appt.appointment_type?.name || 'Sin tipo'}
-              </p>
-              <p className="text-sm text-gray-600">
-                {new Date(appt.start_at).toLocaleString()} —{' '}
-                <span className="capitalize">{appt.status}</span>
-              </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-gray-800">
+                    {appt.appointment_type?.name || 'Sin tipo'}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(appt.start_at).toLocaleString()} —{' '}
+                    <span className="capitalize">{appt.status}</span>
+                  </p>
+                </div>
+              </div>
+
+              {appt.status !== 'cancelled' && appt.status !== 'completed' && (
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => navigate(`/appointments/edit/${appt.id}`)}
+                  className="bg-yellow-400 text-white text-sm px-2 py-1 rounded hover:bg-yellow-500"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleCancel(appt.id)}
+                  className="bg-red-500 text-white text-sm px-2 py-1 rounded hover:bg-red-600"
+                >
+                  Cancelar
+                </button>
+              </div>
+            )}
             </li>
           ))}
         </ul>

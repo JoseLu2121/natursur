@@ -1,21 +1,16 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
-import Dashboard from './Dashboard'
+import { supabase } from './api/supabaseClient'
+import DashboardWrapper from './DashboardWrapper'
 import AppointmentTypeDetail from './AppointmentTypeDetail'
 import ProfilePage from './ProfilePage'
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-)
+import EditAppointmentPage from './EditAppointmentPage'
+import NavBar from './components/NavBar'
+import Home from './Home'
+import LoginPage from './LoginPage'
 
 export default function App() {
   const [session, setSession] = useState(null)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -31,80 +26,72 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setErrorMessage(null)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setErrorMessage(error.message)
-    setLoading(false)
-  }
-
-  const handleSignUp = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setErrorMessage(null)
-    const { error } = await supabase.auth.signUp({ email, password })
-    if (error) setErrorMessage(error.message)
-    setLoading(false)
-  }
-
   const handleLogout = async () => {
     await supabase.auth.signOut()
   }
 
-  if (!session) {
-    return (
-      <div style={{ maxWidth: 400, margin: 'auto' }}>
-        <h2>Login o Registro</h2>
-        
-        {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+  return (
+    <div className="min-h-screen bg-primary-50">
+      <NavBar session={session} onLogout={handleLogout} />
 
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', margin: '8px 0', padding: '8px' }}
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', margin: '8px 0', padding: '8px' }}
-          />
-
-          <button type="submit" disabled={loading}>
-            {loading ? 'Cargando...' : 'Iniciar sesión'}
-          </button>
-        </form>
-
-        <hr />
-        <button onClick={handleSignUp} disabled={loading}>
-          Registrarse
-        </button>
-      </div>
-    )
-  }
-
-    return (
-    <div className="app-container">
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
-        <div className="w-full max-w-6xl p-4 md:p-8">
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-sm border border-primary-100 overflow-hidden">
           <Routes>
+            <Route path="/" element={<Home />} />
             <Route
-              path="/"
-              element={<Dashboard session={session} onLogout={handleLogout} />}
+              path="/citas"
+              element={
+                session ? (
+                  <DashboardWrapper session={session} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace state={{ from: '/citas' }} />
+                )
+              }
             />
             <Route
               path="/appointment-type/:typeId"
-              element={<AppointmentTypeDetail />}
+              element={
+                session ? (
+                  <AppointmentTypeDetail />
+                ) : (
+                  <Navigate to="/login" replace state={{ from: '/appointment-type' }} />
+                )
+              }
             />
-            <Route path="/profile" element={<ProfilePage session={session}/>} />
+            <Route
+              path="/profile"
+              element={
+                session ? (
+                  <ProfilePage session={session} />
+                ) : (
+                  <Navigate to="/login" replace state={{ from: '/profile' }} />
+                )
+              }
+            />
+            <Route
+              path="/appointments/edit/:appointmentId"
+              element={
+                session ? (
+                  <EditAppointmentPage />
+                ) : (
+                  <Navigate to="/login" replace state={{ from: '/appointments/edit' }} />
+                )
+              }
+            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/store"
+              element={
+                session ? (
+                  <div className="p-8 text-center">
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">Tienda</h2>
+                    <p className="text-gray-600">(próximamente)</p>
+                  </div>
+                ) : (
+                  <Navigate to="/login" replace state={{ from: '/store' }} />
+                )
+              }
+            />
           </Routes>
         </div>
       </div>
