@@ -1,103 +1,63 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 flex justify-center items-start min-h-screen min-w-[320px] m-0;
+    background-color: oklch(98.5% 0.002 247.839);
+  }
 
-  color-scheme: light dark;
-  color: rgba(54, 54, 54, 0.87);
-  background-color: oklch(98.5% 0.002 247.839);
+  h1 {
+    @apply text-4xl font-bold tracking-tight sm:text-5xl;
+  }
 
-  justify-content: center;  /* center horizontally */
-  align-items: flex-start;  /* start near top on small screens */
+  h2 {
+    @apply text-3xl font-bold tracking-tight sm:text-4xl;
+  }
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  h3 {
+    @apply text-2xl font-bold tracking-tight sm:text-3xl;
+  }
+
+  a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
+  }
+
+  a:hover {
+    color: #535bf2;
+  }
+
+  .app-container {
+    width: 100%;
+    max-width: 1152px; /* equivalente a max-w-6xl */
+    padding: 1rem;
+    box-sizing: border-box;
+  }
 }
 
-@media (min-width: 768px) {
-  /* vertically center on medium+ screens */
-  body {
-    align-items: center;
+@layer components {
+  .btn-primary {
+    @apply rounded-md bg-primary-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-all;
+  }
+
+  .btn-secondary {
+    @apply rounded-md bg-white px-3.5 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all;
+  }
+
+  .input-primary {
+    @apply block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6;
+  }
+
+  .container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 }
 
 .app-container {
-  width: 100%;
-  max-width: 1152px; /* same as max-w-6xl */
-  padding: 1rem;
-  box-sizing: border-box;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  justify-content: center;   /* center horizontally */
-  align-items: flex-start;   /* start near the top */
   min-height: 100vh;
-  min-width: 320px;
-  background-color: oklch(98.5% 0.002 247.839);
-  
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.25s;
-  background-color: #f3f4f6 !important;     
-  color: #4b5563 !important;                
-  border: 1px solid #e5e7eb !important;     
-  box-shadow: none !important;
-}
-
-button:hover { background-color: #e9eef2 !important; } 
-button:disabled {
-  background-color: #f5f5f5 !important;
-  color: #9ca3af !important;
-  cursor: not-allowed;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: grayscale(100%) brightness(0.6); 
-  opacity: 1;
+  display: flex;
+  flex-direction: column;
 }
