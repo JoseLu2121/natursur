@@ -1,8 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { supabase } from './api/supabaseClient'
+
+// Components & Pages
 import DashboardWrapper from './DashboardWrapper'
 import AppointmentTypeDetail from './AppointmentTypeDetail'
+import MyAppointments from './MyAppointments'
 import ProfilePage from './ProfilePage'
 import EditAppointmentPage from './EditAppointmentPage'
 import NavBar from './components/NavBar'
@@ -38,6 +41,7 @@ export default function App() {
         <div className="bg-white rounded-lg shadow-sm border border-primary-100 overflow-hidden">
           <Routes>
             <Route path="/" element={<Home />} />
+
             <Route
               path="/citas"
               element={
@@ -48,6 +52,7 @@ export default function App() {
                 )
               }
             />
+
             <Route
               path="/appointment-type/:typeId"
               element={
@@ -58,6 +63,7 @@ export default function App() {
                 )
               }
             />
+
             <Route
               path="/profile"
               element={
@@ -68,6 +74,7 @@ export default function App() {
                 )
               }
             />
+
             <Route
               path="/appointments/edit/:appointmentId"
               element={
@@ -78,7 +85,7 @@ export default function App() {
                 )
               }
             />
-            <Route path="/login" element={<LoginPage />} />
+
             <Route
               path="/store"
               element={
@@ -92,6 +99,13 @@ export default function App() {
                 )
               }
             />
+
+            <Route
+              path="/my-appointments"
+              element={<MyAppointments session={session} />}
+            />
+
+            <Route path="/login" element={<LoginPage />} />
           </Routes>
         </div>
       </div>

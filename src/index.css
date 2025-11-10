@@ -4,7 +4,8 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-gray-50 text-gray-900 flex justify-center items-start min-h-screen min-w-[320px] m-0;
+    background-color: oklch(98.5% 0.002 247.839);
   }
 
   h1 {
@@ -17,6 +18,23 @@
 
   h3 {
     @apply text-2xl font-bold tracking-tight sm:text-3xl;
+  }
+
+  a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
+  }
+
+  a:hover {
+    color: #535bf2;
+  }
+
+  .app-container {
+    width: 100%;
+    max-width: 1152px; /* equivalente a max-w-6xl */
+    padding: 1rem;
+    box-sizing: border-box;
   }
 }
 
