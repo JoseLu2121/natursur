@@ -1,11 +1,35 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getAllAppointmentTypes } from './api/appointmentTypes'
+import { supabase } from './api/supabaseClient'
 
-export default function Dashboard({ session, onLogout }) {
+export default function Dashboard({ onLogout }) {
   const [appointmentTypes, setAppointmentTypes] = useState([])
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
+  // 🔹 Verificar sesión al montar
+  useEffect(() => {
+    const fetchSession = async () => {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        // Si no hay sesión, redirigir a login
+        navigate('/login', { replace: true })
+        return
+      }
+
+      setUser(user)
+      setLoading(false)
+    }
+
+    fetchSession()
+  }, [navigate])
+
+  // 🔹 Cargar tipos de citas
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -18,22 +42,20 @@ export default function Dashboard({ session, onLogout }) {
     loadData()
   }, [])
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Cargando...
+      </div>
+    )
+  }
+
   return (
     <div className="relative min-h-screen bg-gray-50 p-6">
-      {/* 🔹 Botón de perfil arriba a la izquierda */}
-      <button
-        onClick={() => navigate('/profile')}
-        className="absolute top-4 left-4 flex items-center gap-2 bg-white shadow-md hover:bg-gray-100 px-3 py-2 rounded-full transition"
-      >
-        {/* Puedes usar un emoji o un pequeño SVG */}
-        <span role="img" aria-label="perfil" className="text-lg">
-          👤
-        </span>
-      </button>
 
       <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl shadow p-6">
         <h2 className="text-xl font-semibold mb-2 text-gray-800">
-          Bienvenido, {session.user.email}
+          Bienvenido, {user.email}
         </h2>
         <button
           onClick={onLogout}

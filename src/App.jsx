@@ -1,7 +1,7 @@
+// src/App.jsx
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { supabase } from './api/supabaseClient'
 import { CartProvider } from './context/CartContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import DashboardWrapper from './DashboardWrapper'
 import AppointmentTypeDetail from './AppointmentTypeDetail'
 import ProfilePage from './ProfilePage'
@@ -10,92 +10,99 @@ import NavBar from './components/NavBar'
 import Home from './Home'
 import Shop from './Shop'
 import LoginPage from './LoginPage'
+import { supabase } from './api/supabaseClient'
 
-export default function App() {
-  const [session, setSession] = useState(null)
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth()
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Cargando...
+      </div>
+    )
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
+  if (!user) return <Navigate to="/login" replace />
 
-    return () => subscription.unsubscribe()
-  }, [])
+  return children
+}
+
+function AppContent() {
+  const { user } = useAuth()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
   }
 
   return (
-    <CartProvider>
-      <div className="min-h-screen bg-primary-50">
-        <NavBar session={session} onLogout={handleLogout} />
+    <div className="min-h-screen bg-primary-50">
+      <NavBar session={user} onLogout={handleLogout} />
 
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-sm border border-primary-100 overflow-hidden p-6">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route
-                path="/citas"
-                element={
-                  session ? (
-                    <DashboardWrapper session={session} onLogout={handleLogout} />
-                  ) : (
-                    <Navigate to="/login" replace state={{ from: '/citas' }} />
-                  )
-                }
-              />
-              <Route
-                path="/appointment-type/:typeId"
-                element={
-                  session ? (
-                    <AppointmentTypeDetail />
-                  ) : (
-                    <Navigate to="/login" replace state={{ from: '/appointment-type' }} />
-                  )
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  session ? (
-                    <ProfilePage session={session} />
-                  ) : (
-                    <Navigate to="/login" replace state={{ from: '/profile' }} />
-                  )
-                }
-              />
-              <Route
-                path="/appointments/edit/:appointmentId"
-                element={
-                  session ? (
-                    <EditAppointmentPage />
-                  ) : (
-                    <Navigate to="/login" replace state={{ from: '/appointments/edit' }} />
-                  )
-                }
-              />
-              <Route path="/login" element={<LoginPage />} />
-              <Route
-                path="/store"
-                element={
-                  session ? (
-                    <Shop />
-                  ) : (
-                    <Navigate to="/login" replace state={{ from: '/store' }} />
-                  )
-                }
-              />
-            </Routes>
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-sm border border-primary-100 overflow-hidden p-6">
+          <Routes>
+            <Route path="/" element={<Home />} />
+
+            <Route
+              path="/citas"
+              element={
+                <PrivateRoute>
+                  <DashboardWrapper />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/appointment-type/:typeId"
+              element={
+                <PrivateRoute>
+                  <AppointmentTypeDetail />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <ProfilePage />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/appointments/edit/:appointmentId"
+              element={
+                <PrivateRoute>
+                  <EditAppointmentPage />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/store"
+              element={
+                <PrivateRoute>
+                  <Shop />
+                </PrivateRoute>
+              }
+            />
+
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </div>
       </div>
-    </CartProvider>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
+    </AuthProvider>
   )
 }
