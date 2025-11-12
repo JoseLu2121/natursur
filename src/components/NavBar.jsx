@@ -1,6 +1,7 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { Menu, Transition } from '@headlessui/react'
+import { supabase } from '../api/supabaseClient'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -71,6 +72,29 @@ function Avatar({ session, onLogout }) {
 export default function NavBar({ session, onLogout }) {
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userRole, setUserRole] = useState(null)
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (session?.user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+
+          if (!error && data) {
+            setUserRole(data.role)
+          }
+        } catch (err) {
+          console.error('Error fetching user role:', err)
+        }
+      }
+    }
+
+    fetchUserRole()
+  }, [session])
 
   return (
     <nav className="bg-white shadow">
@@ -146,6 +170,21 @@ export default function NavBar({ session, onLogout }) {
               >
                 Tienda
               </NavLink>
+              {(userRole === 'admin' || userRole === 'staff') && (
+                <NavLink
+                  to="/stock"
+                  className={({ isActive }) =>
+                    classNames(
+                      isActive
+                        ? 'border-primary-500 text-gray-900'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                      'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
+                    )
+                  }
+                >
+                  Stock
+                </NavLink>
+              )}
             </div>
           </div>
 
@@ -210,6 +249,22 @@ export default function NavBar({ session, onLogout }) {
           >
             Tienda
           </NavLink>
+          {(userRole === 'admin' || userRole === 'staff') && (
+            <NavLink
+              to="/stock"
+              className={({ isActive }) =>
+                classNames(
+                  isActive
+                    ? 'bg-primary-50 border-primary-500 text-primary-700'
+                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700',
+                  'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
+                )
+              }
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Stock
+            </NavLink>
+          )}
         </div>
       </div>
     </nav>
