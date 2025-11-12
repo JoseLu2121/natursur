@@ -10,7 +10,56 @@ import ProfilePage from './ProfilePage'
 import EditAppointmentPage from './EditAppointmentPage'
 import NavBar from './components/NavBar'
 import Home from './Home'
+import Stock from './Stock'
 import LoginPage from './LoginPage'
+
+// Component to protect admin/staff routes
+function AdminRoute({ session, children }) {
+  const [userRole, setUserRole] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (session?.user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+
+          if (!error && (data?.role === 'admin' || data?.role === 'staff')) {
+            setUserRole(data.role)
+          }
+        } catch (err) {
+          console.error('Error fetching user role:', err)
+        }
+      }
+      setLoading(false)
+    }
+
+    fetchUserRole()
+  }, [session])
+
+  if (loading) {
+    return <div className="text-center py-12">Cargando...</div>
+  }
+
+  if (!session) {
+    return <Navigate to="/login" replace state={{ from: '/stock' }} />
+  }
+
+  if (userRole !== 'admin' && userRole !== 'staff') {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Acceso denegado</h2>
+        <p className="text-gray-600">Solo los administradores y staff pueden acceder a esta sección</p>
+      </div>
+    )
+  }
+
+  return children
+}
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -87,16 +136,11 @@ export default function App() {
             />
 
             <Route
-              path="/store"
+              path="/stock"
               element={
-                session ? (
-                  <div className="p-8 text-center">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">Tienda</h2>
-                    <p className="text-gray-600">(próximamente)</p>
-                  </div>
-                ) : (
-                  <Navigate to="/login" replace state={{ from: '/store' }} />
-                )
+                <AdminRoute session={session}>
+                  <Stock />
+                </AdminRoute>
               }
             />
 
