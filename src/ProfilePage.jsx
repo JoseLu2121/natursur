@@ -1,36 +1,40 @@
 // src/pages/ProfilePage.jsx
 import { useEffect, useState } from 'react'
 import { getUserById, updateUser } from './api/user'
-import { getAppointmentsByUser, cancelAppointment, updateAppointment } from './api/appointments'
+//import { getAppointmentsByUser, cancelAppointment, updateAppointment } from './api/appointments'
 import ProfileButton from './ProfileButton.jsx'
-import { useNavigate } from 'react-router-dom'
+//import { useNavigate, Navigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext.jsx'
 
-
-
-
-export default function ProfilePage({ session }) {
-  const userId = session?.user?.id
-  const userEmail = session?.user?.email
+export default function ProfilePage() {
+  const { user } = useAuth() // 🔹 obtener usuario directamente del contexto
+  //const navigate = useNavigate()
   const [userData, setUserData] = useState({ full_name: '', phone: '', role: '' })
-  const [appointments, setAppointments] = useState([])
+  //const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const [editingId, setEditingId] = useState(null)
-  const [editingDate, setEditingDate] = useState('')
-  const navigate = useNavigate()
+  //const [editingId, setEditingId] = useState(null)
+  //const [editingDate, setEditingDate] = useState('')
+
+  // 🔹 Redirigir si no hay usuario
+  if (!user) return <Navigate to="/login" replace />
+
+  const userId = user.id
+  const userEmail = user.email
+
   // 🔹 Cargar perfil y citas
   useEffect(() => {
     const loadData = async () => {
       try {
-        const user = await getUserById(userId)
+        const u = await getUserById(userId)
         setUserData({
-          full_name: user.full_name || '',
-          phone: user.phone || '',
-          role: user.role || ''
+          full_name: u.full_name || '',
+          phone: u.phone || '',
+          role: u.role || ''
         })
 
-        const appts = await getAppointmentsByUser(userId)
-        setAppointments(appts)
+        //const appts = await getAppointmentsByUser(userId)
+        //setAppointments(appts)
       } catch (error) {
         console.error('Error cargando perfil:', error.message)
       }
@@ -57,7 +61,7 @@ export default function ProfilePage({ session }) {
       setLoading(false)
     }
   }
-
+  /*
   // 🔹 Cancelar cita
   const handleCancel = async (id) => {
     if (!window.confirm('¿Seguro que deseas cancelar esta cita?')) return
@@ -70,13 +74,13 @@ export default function ProfilePage({ session }) {
       alert('Error al cancelar la cita: ' + err.message)
     }
   }
-
-  // 🔹 Editar cita (solo cambiar fecha/hora)
+  
+  // 🔹 Editar cita
   const handleEdit = async (id) => {
     if (!editingDate) return alert('Selecciona una nueva fecha y hora')
     try {
       const start = new Date(editingDate)
-      const end = new Date(start.getTime() + 60 * 60 * 1000) // +1 hora
+      const end = new Date(start.getTime() + 60 * 60 * 1000)
       await updateAppointment(id, { start_at: start.toISOString(), end_at: end.toISOString() })
       setAppointments((prev) =>
         prev.map((a) =>
@@ -89,15 +93,13 @@ export default function ProfilePage({ session }) {
       alert('Error al editar la cita: ' + err.message)
     }
   }
-
+  */
   return (
     <div className="relative p-6 max-w-lg mx-auto">
-      <ProfileButton />
 
       <h2 className="text-2xl font-semibold mb-2">Mi Perfil</h2>
       <p className="text-gray-600 mb-4">{userEmail}</p>
 
-      {/* === FORM PERFIL === */}
       <form onSubmit={handleSave} className="space-y-4 mb-6">
         <div>
           <label className="block text-sm font-medium">Nombre completo</label>
@@ -141,10 +143,9 @@ export default function ProfilePage({ session }) {
 
         {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}
       </form>
-
+      {/*
       <hr className="my-6" />
 
-      {/* === LISTA DE CITAS === */}
       <h3 className="text-xl font-semibold mb-2">Mis Citas</h3>
 
       {appointments.length === 0 ? (
@@ -188,6 +189,7 @@ export default function ProfilePage({ session }) {
           ))}
         </ul>
       )}
+      */}
     </div>
   )
 }

@@ -20,7 +20,7 @@ export default function AppointmentTypeDetail() {
   const [selectedTariff, setSelectedTariff] = useState(null)
   const [date, setDate] = useState('')
   const [availableSlots, setAvailableSlots] = useState([])
-  const [selectedSlots, setSelectedSlots] = useState([])
+  const [selectedSlotsByDate, setSelectedSlotsByDate] = useState({})
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [loading, setLoading] = useState(true)
   const [confirming, setConfirming] = useState(false)
@@ -70,7 +70,6 @@ export default function AppointmentTypeDetail() {
         selectedStaff.id
       )
       setAvailableSlots(slots)
-      setSelectedSlots([])
     } catch (error) {
       console.error('Error cargando slots:', error.message)
       setAvailableSlots([])
@@ -81,29 +80,44 @@ export default function AppointmentTypeDetail() {
 
   const handleSelectSlot = (slot) => {
     if (slot.is_booked) return
-    const isSelected = selectedSlots.some((s) => s.start_at === slot.start_at)
+    if (!date) return alert('Selecciona una fecha antes de elegir hora')
+
     const sessionsAllowed = selectedTariff.sessions || 1
+    const currentDaySlots = selectedSlotsByDate[date] || []
+    const isSelected = currentDaySlots.some((s) => s.start_at === slot.start_at)
+
+    const totalSelected = Object.values(selectedSlotsByDate).flat().length
 
     if (!isSelected) {
-      if (selectedSlots.length >= sessionsAllowed) {
+      if (totalSelected >= sessionsAllowed) {
         alert(`Solo puedes seleccionar ${sessionsAllowed} sesión(es) con esta tarifa.`)
         return
       }
-      setSelectedSlots([...selectedSlots, slot])
+      const updated = {
+        ...selectedSlotsByDate,
+        [date]: [...currentDaySlots, slot]
+      }
+      setSelectedSlotsByDate(updated)
     } else {
-      setSelectedSlots(selectedSlots.filter((s) => s.start_at !== slot.start_at))
+      const updated = {
+        ...selectedSlotsByDate,
+        [date]: currentDaySlots.filter((s) => s.start_at !== slot.start_at)
+      }
+      setSelectedSlotsByDate(updated)
     }
   }
 
   const handleConfirmReservations = async () => {
-    if (selectedSlots.length === 0) return
+    const allSelectedSlots = Object.values(selectedSlotsByDate).flat()
+    if (allSelectedSlots.length === 0) return
+
     try {
       setConfirming(true)
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
-      const appointmentsToCreate = selectedSlots.map((slot) => ({
+      const appointmentsToCreate = allSelectedSlots.map((slot) => ({
         appointment_type_id: typeId,
         staffId: selectedStaff.id,
         start_at: slot.start_at,
@@ -113,7 +127,7 @@ export default function AppointmentTypeDetail() {
 
       await createMultipleAppointments(appointmentsToCreate)
       alert('¡Citas reservadas con éxito!')
-      setSelectedSlots([])
+      setSelectedSlotsByDate({})
       fetchSlots()
     } catch (error) {
       alert('Error al confirmar: ' + error.message)
@@ -131,6 +145,8 @@ export default function AppointmentTypeDetail() {
       minute: '2-digit',
     })}`
   }
+
+  const totalSelectedCount = Object.values(selectedSlotsByDate).flat().length
 
   if (loading)
     return (
@@ -208,7 +224,7 @@ export default function AppointmentTypeDetail() {
                       setSelectedTariff(null)
                       setDate('')
                       setAvailableSlots([])
-                      setSelectedSlots([])
+                      setSelectedSlotsByDate({})
                     }}
                   />
                 </label>
@@ -262,7 +278,7 @@ export default function AppointmentTypeDetail() {
                         setSelectedTariff(t)
                         setDate('')
                         setAvailableSlots([])
-                        setSelectedSlots([])
+                        setSelectedSlotsByDate({})
                       }}
                     />
                   </div>
@@ -306,7 +322,6 @@ export default function AppointmentTypeDetail() {
                 onClick={() => {
                   setDate('')
                   setAvailableSlots([])
-                  setSelectedSlots([])
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-slate-200 bg-gray-100 text-slate-700 hover:bg-gray-200"
               >
@@ -320,15 +335,15 @@ export default function AppointmentTypeDetail() {
             {availableSlots.length > 0 ? (
               <>
                 <div className="text-sm text-slate-600 mb-3">
-                  Seleccionadas: {selectedSlots.length} /{' '}
-                  {selectedTariff.sessions || 1}
+                  Seleccionadas: {totalSelectedCount} / {selectedTariff.sessions || 1}
                 </div>
 
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {availableSlots.map((slot) => {
-                    const isSelected = selectedSlots.some(
-                      (s) => s.start_at === slot.start_at
-                    )
+                    const isSelected =
+                      selectedSlotsByDate[date]?.some(
+                        (s) => s.start_at === slot.start_at
+                      ) || false
                     return (
                       <li
                         key={`${slot.slot_id}-${slot.start_at}`}
@@ -365,7 +380,7 @@ export default function AppointmentTypeDetail() {
                   })}
                 </ul>
 
-                {selectedSlots.length > 0 && (
+                {totalSelectedCount > 0 && (
                   <div className="mt-6 flex justify-end">
                     <button
                       onClick={handleConfirmReservations}
@@ -374,8 +389,8 @@ export default function AppointmentTypeDetail() {
                     >
                       {confirming
                         ? 'Confirmando...'
-                        : `Confirmar ${selectedSlots.length} reserva${
-                            selectedSlots.length > 1 ? 's' : ''
+                        : `Confirmar ${totalSelectedCount} reserva${
+                            totalSelectedCount > 1 ? 's' : ''
                           }`}
                     </button>
                   </div>

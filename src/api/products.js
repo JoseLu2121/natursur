@@ -40,8 +40,10 @@ export const getProduct = async (productId) => {
 // Create an order
 export const createOrder = async (userId, items) => {
   try {
+    // Calculate total
     const total = items.reduce((sum, item) => sum + (item.unit_price_cents * item.quantity), 0)
 
+    // Create the order
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -54,6 +56,7 @@ export const createOrder = async (userId, items) => {
 
     if (orderError) throw orderError
 
+    // Add order items
     const orderItems = items.map(item => ({
       order_id: order.id,
       product_id: item.product_id,

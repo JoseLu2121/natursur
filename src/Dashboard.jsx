@@ -1,11 +1,40 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getAllAppointmentTypes } from './api/appointmentTypes'
+import { cancelAppointment, getAppointmentsByUser } from './api/appointments'
+import { supabase } from './api/supabaseClient'
 
-export default function Dashboard({ session, onLogout }) {
+export default function Dashboard({ onLogout }) {
   const [appointmentTypes, setAppointmentTypes] = useState([])
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const [appointments, setAppointments] = useState([])
 
+
+  // 🔹 Verificar sesión al montar
+  useEffect(() => {
+    const fetchSession = async () => {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        // Si no hay sesión, redirigir a login
+        navigate('/login', { replace: true })
+        return
+      }
+      const appts = await getAppointmentsByUser(user.id)
+      setAppointments(appts)
+
+      setUser(user)
+      setLoading(false)
+    }
+
+    fetchSession()
+  }, [navigate])
+
+  // 🔹 Cargar tipos de citas
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -18,52 +47,46 @@ export default function Dashboard({ session, onLogout }) {
     loadData()
   }, [])
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Cargando...
+      </div>
+    )
+  }
+
+  const handleCancel = async (id) => {
+      if (!window.confirm('¿Seguro que deseas cancelar esta cita?')) return
+      try {
+        await cancelAppointment(id)
+        setAppointments((prev) =>
+          prev.map((a) => (a.id === id ? { ...a, status: 'cancelled' } : a))
+        )
+      } catch (err) {
+        alert('Error al cancelar la cita: ' + err.message)
+      }
+    }
+
   return (
     <div className="relative min-h-screen bg-gray-50 p-6">
-      {/* Perfil (botón rápido) */}
-      <button
-        onClick={() => navigate('/profile')}
-        className="absolute top-4 left-4 flex items-center gap-2 bg-white shadow-md hover:bg-gray-100 px-3 py-2 rounded-full transition"
-        aria-label="Ir al perfil"
-      >
-        <span role="img" aria-label="perfil" className="text-lg">
-          👤
-        </span>
-      </button>
 
-      <div className="max-w-5xl mx-auto p-6 md:p-10 bg-white border border-emerald-100 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.15)]">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-sky-900">Bienvenido,</h2>
-            <p className="text-slate-600">{session?.user?.email}</p>
-          </div>
+      <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl shadow p-6">
+        <h2 className="text-xl font-semibold mb-2 text-gray-800">
+          Bienvenido, {user.email}
+        </h2>
+        <button
+          onClick={onLogout}
+          className="bg-red-500 hover:bg-red-600 text-white rounded-lg px-4 py-2 text-sm mt-2"
+        >
+          Cerrar sesión
+        </button>
 
-          <div className="flex items-center gap-3">
-            <Link
-              to="/my-appointments"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-sky-100 bg-sky-50 text-sky-700 hover:bg-sky-100 shadow-sm text-sm font-medium transition"
-            >
-              Mis Citas
-            </Link>
+        <hr className="my-6" />
 
-            <button
-              onClick={onLogout}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-slate-200 bg-gray-100 hover:bg-gray-200 shadow-sm text-slate-700 text-sm font-medium"
-            >
-              Cerrar sesión
-            </button>
-          </div>
-        </header>
-
-        {/* Tipos de Cita */}
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-medium text-emerald-700">Tipos de Citas</h3>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {appointmentTypes.length > 0 ? (
-            appointmentTypes.map((type) => (
+        <h3 className="text-lg font-medium mb-3 text-gray-700">Tipos de Citas</h3>
+        <ul className="space-y-2">
+          {appointmentTypes.map((type) => (
+            <li key={type.id}>
               <Link
                 key={type.id}
                 to={`/appointment-type/${type.id}`}
@@ -89,6 +112,54 @@ export default function Dashboard({ session, onLogout }) {
 
         <footer className="mt-10 text-center text-xs text-slate-400">© 2025 Natursur</footer>
       </div>
+
+      <hr className="my-6" />
+
+
+      <h3 className="text-xl font-semibold mb-2">Mis Citas</h3>
+
+      {appointments.length === 0 ? (
+        <p className="text-gray-500">No tienes citas registradas.</p>
+      ) : (
+        <ul className="space-y-3">
+          {appointments.map((appt) => (
+            <li
+              key={appt.id}
+              className="border rounded p-3 shadow-sm bg-white space-y-2"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-gray-800">
+                    {appt.appointment_type?.name || 'Sin tipo'}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(appt.start_at).toLocaleString()} —{' '}
+                    <span className="capitalize">{appt.status}</span>
+                  </p>
+                </div>
+              </div>
+
+              {appt.status !== 'cancelled' && appt.status !== 'completed' && (
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => navigate(`/appointments/edit/${appt.id}`)}
+                  className="bg-yellow-400 text-white text-sm px-2 py-1 rounded hover:bg-yellow-500"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleCancel(appt.id)}
+                  className="bg-red-500 text-white text-sm px-2 py-1 rounded hover:bg-red-600"
+                >
+                  Cancelar
+                </button>
+              </div>
+            )}
+            </li>
+          ))}
+        </ul>
+      )}    
+
     </div>
   )
 }

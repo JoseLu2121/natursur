@@ -1,4 +1,7 @@
+// src/App.jsx
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { CartProvider } from './context/CartContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { useState, useEffect } from 'react'
 import { supabase } from './api/supabaseClient'
 
@@ -10,9 +13,20 @@ import ProfilePage from './ProfilePage'
 import EditAppointmentPage from './EditAppointmentPage'
 import NavBar from './components/NavBar'
 import Home from './Home'
+import Shop from './Shop'
 import Stock from './Stock'
 import LoginPage from './LoginPage'
+import { supabase } from './api/supabaseClient'
 
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth()
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Cargando...
+      </div>
+    )
 // Component to protect admin/staff routes
 function AdminRoute({ session, children }) {
   const [userRole, setUserRole] = useState(null)
@@ -64,19 +78,13 @@ function AdminRoute({ session, children }) {
 export default function App() {
   const [session, setSession] = useState(null)
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
+  if (!user) return <Navigate to="/login" replace />
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
+  return children
+}
 
-    return () => subscription.unsubscribe()
-  }, [])
+function AppContent() {
+  const { user } = useAuth()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -84,60 +92,60 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-primary-50">
-      <NavBar session={session} onLogout={handleLogout} />
+      <NavBar session={user} onLogout={handleLogout} />
 
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-primary-100 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-primary-100 overflow-hidden p-6">
           <Routes>
             <Route path="/" element={<Home />} />
 
             <Route
               path="/citas"
               element={
-                session ? (
-                  <DashboardWrapper session={session} onLogout={handleLogout} />
-                ) : (
-                  <Navigate to="/login" replace state={{ from: '/citas' }} />
-                )
+                <PrivateRoute>
+                  <DashboardWrapper />
+                </PrivateRoute>
               }
             />
 
             <Route
               path="/appointment-type/:typeId"
               element={
-                session ? (
+                <PrivateRoute>
                   <AppointmentTypeDetail />
-                ) : (
-                  <Navigate to="/login" replace state={{ from: '/appointment-type' }} />
-                )
+                </PrivateRoute>
               }
             />
 
             <Route
               path="/profile"
               element={
-                session ? (
-                  <ProfilePage session={session} />
-                ) : (
-                  <Navigate to="/login" replace state={{ from: '/profile' }} />
-                )
+                <PrivateRoute>
+                  <ProfilePage />
+                </PrivateRoute>
               }
             />
 
             <Route
               path="/appointments/edit/:appointmentId"
               element={
-                session ? (
+                <PrivateRoute>
                   <EditAppointmentPage />
-                ) : (
-                  <Navigate to="/login" replace state={{ from: '/appointments/edit' }} />
-                )
+                </PrivateRoute>
               }
             />
 
             <Route
               path="/stock"
               element={
+                <PrivateRoute>
+                  <Shop />
+                </PrivateRoute>
+              }
+            />
+
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
                 <AdminRoute session={session}>
                   <Stock />
                 </AdminRoute>
@@ -154,5 +162,15 @@ export default function App() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
+    </AuthProvider>
   )
 }
