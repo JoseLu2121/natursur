@@ -1,5 +1,9 @@
 import { supabase } from './supabaseClient'
 
+// ✅ Bucket configuration
+// ⚠️ Mantén el mismo nombre si ya existe, pero considera renombrar a 'shop-images' para evitar errores con espacios.
+const PRODUCTS_BUCKET = 'Shop images'
+
 // Fetch all products
 export const getProducts = async () => {
   try {
@@ -111,6 +115,138 @@ export const getOrderItems = async (orderId) => {
     return data || []
   } catch (error) {
     console.error('Error fetching order items:', error)
+    throw error
+  }
+}
+
+// Create a new product
+export const createProduct = async (productData) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .insert({
+        name: productData.name,
+        description: productData.description,
+        price_cents: parseInt(productData.price_cents),
+        stock: parseInt(productData.stock || 0),
+        image_url: productData.image_url,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error creating product:', error)
+    throw error
+  }
+}
+
+// Update a product
+export const updateProduct = async (productId, productData) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .update({
+        name: productData.name,
+        description: productData.description,
+        price_cents: parseInt(productData.price_cents),
+        stock: parseInt(productData.stock),
+        image_url: productData.image_url,
+      })
+      .eq('id', productId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error updating product:', error)
+    throw error
+  }
+}
+
+// Update product stock
+export const updateProductStock = async (productId, stock) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .update({ stock: parseInt(stock) })
+      .eq('id', productId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error updating product stock:', error)
+    throw error
+  }
+}
+
+// Delete a product
+export const deleteProduct = async (productId) => {
+  try {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId)
+
+    if (error) throw error
+  } catch (error) {
+    console.error('Error deleting product:', error)
+    throw error
+  }
+}
+
+// ✅ Upload image to products bucket (signed URL valid for 1 year)
+export const uploadProductImage = async (file) => {
+  try {
+    if (!file) throw new Error('No file provided')
+
+    // Generate unique filename
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(2, 8)
+    const fileExtension = file.name.split('.').pop()
+    const filename = `product-${timestamp}-${randomString}.${fileExtension}`
+
+    // Upload file
+    const { error: uploadError } = await supabase.storage
+      .from(PRODUCTS_BUCKET)
+      .upload(filename, file)
+
+    if (uploadError) throw uploadError
+
+    // Generate signed URL valid for 1 year (31,536,000 seconds)
+    const oneYearInSeconds = 60 * 60 * 24 * 365
+
+    const { data: signedData, error: signedError } = await supabase.storage
+      .from(PRODUCTS_BUCKET)
+      .createSignedUrl(filename, oneYearInSeconds)
+
+    if (signedError) throw signedError
+
+    // Return signed URL
+    return signedData.signedUrl
+  } catch (error) {
+    console.error('Error uploading image:', error)
+    throw error
+  }
+}
+
+// Delete image from products bucket
+export const deleteProductImage = async (imageUrl) => {
+  try {
+    // Extract filename from URL
+    const filename = imageUrl.split('/').pop()
+
+    const { error } = await supabase.storage
+      .from(PRODUCTS_BUCKET)
+      .remove([filename])
+
+    if (error) throw error
+  } catch (error) {
+    console.error('Error deleting image:', error)
     throw error
   }
 }

@@ -5,7 +5,7 @@ import { calculateAvailableSlots } from './api/weeklySlots'
 import {
   getAppointmentTypeById,
   getTariffsByAppointmentType,
-  getAvailableStaffForType
+  getAvailableStaffForType,
 } from './api/appointmentTypes'
 import { createMultipleAppointments } from './api/appointments'
 import { supabase } from './api/supabaseClient'
@@ -114,7 +114,7 @@ export default function AppointmentTypeDetail() {
     try {
       setConfirming(true)
       const {
-        data: { user }
+        data: { user },
       } = await supabase.auth.getUser()
 
       const appointmentsToCreate = allSelectedSlots.map((slot) => ({
@@ -122,7 +122,7 @@ export default function AppointmentTypeDetail() {
         staffId: selectedStaff.id,
         start_at: slot.start_at,
         end_at: slot.end_at,
-        userId: user?.id
+        userId: user?.id,
       }))
 
       await createMultipleAppointments(appointmentsToCreate)
@@ -139,10 +139,10 @@ export default function AppointmentTypeDetail() {
   const formatTimeRange = (slot) => {
     return `${new Date(slot.start_at).toLocaleTimeString([], {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })} - ${new Date(slot.end_at).toLocaleTimeString([], {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })}`
   }
 
@@ -156,8 +156,8 @@ export default function AppointmentTypeDetail() {
     )
 
   return (
-    <div className="max-w-3xl mx-auto p-6 md:p-10">
-      {/* Cabecera */}
+    <div className="max-w-3xl mx-auto p-6 md:p-10 bg-white border border-emerald-100 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+      {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -408,7 +408,7 @@ export default function AppointmentTypeDetail() {
       )}
 
       <footer className="mt-6 text-center text-xs text-slate-400">
-        <div>© 2025 Fernando Escalona</div>
+        <div>© 2025 Natursur</div>
       </footer>
     </div>
   )

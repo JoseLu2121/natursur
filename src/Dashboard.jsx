@@ -88,14 +88,29 @@ export default function Dashboard({ onLogout }) {
           {appointmentTypes.map((type) => (
             <li key={type.id}>
               <Link
+                key={type.id}
                 to={`/appointment-type/${type.id}`}
-                className="block bg-gray-100 hover:bg-gray-200 rounded-lg px-4 py-2"
+                className="block border border-emerald-100 rounded-2xl bg-white shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
               >
-                {type.name}
+                <div className="p-5 flex flex-col h-full">
+                  <div className="flex-1">
+                    <h4 className="text-lg font-semibold text-sky-900 mb-1">{type.name}</h4>
+                    {type.description && (
+                      <p className="text-sm text-slate-600 line-clamp-3">{type.description}</p>
+                    )}
+                  </div>
+                  <div className="mt-4 text-right">
+                    <span className="inline-block text-sm text-emerald-700 font-medium hover:underline">Reservar →</span>
+                  </div>
+                </div>
               </Link>
-            </li>
-          ))}
-        </ul>
+            ))
+          ) : (
+            <p className="text-slate-500 text-sm col-span-full text-center py-10">No hay tipos de citas disponibles.</p>
+          )}
+        </div>
+
+        <footer className="mt-10 text-center text-xs text-slate-400">© 2025 Natursur</footer>
       </div>
 
       <hr className="my-6" />
