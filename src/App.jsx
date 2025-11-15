@@ -16,17 +16,25 @@ import Home from './Home'
 import Shop from './Shop'
 import Stock from './Stock'
 import LoginPage from './LoginPage'
-import { supabase } from './api/supabaseClient'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
 
-  if (loading)
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         Cargando...
       </div>
     )
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
+}
+
 // Component to protect admin/staff routes
 function AdminRoute({ session, children }) {
   const [userRole, setUserRole] = useState(null)
@@ -42,8 +50,8 @@ function AdminRoute({ session, children }) {
             .eq('id', session.user.id)
             .single()
 
-          if (!error && (data?.role === 'admin' || data?.role === 'staff')) {
-            setUserRole(data.role)
+          if (!error) {
+            setUserRole(data?.role)
           }
         } catch (err) {
           console.error('Error fetching user role:', err)
@@ -72,19 +80,13 @@ function AdminRoute({ session, children }) {
     )
   }
 
-  return children
-}
-
-export default function App() {
-  const [session, setSession] = useState(null)
-
-  if (!user) return <Navigate to="/login" replace />
+  
 
   return children
 }
 
 function AppContent() {
-  const { user } = useAuth()
+  const { user: session } = useAuth()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -92,7 +94,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-primary-50">
-      <NavBar session={user} onLogout={handleLogout} />
+      <NavBar session={session} onLogout={handleLogout} />
 
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm border border-primary-100 overflow-hidden p-6">
@@ -136,16 +138,17 @@ function AppContent() {
             />
 
             <Route
-              path="/stock"
+              path="/store"
               element={
-                <PrivateRoute>
-                  <Shop />
+                <PrivateRoute session={session}>
+                  < Shop/>
                 </PrivateRoute>
               }
-            />
+            />    
 
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route
+              path="/stock"
+              element={
                 <AdminRoute session={session}>
                   <Stock />
                 </AdminRoute>
@@ -158,6 +161,7 @@ function AppContent() {
             />
 
             <Route path="/login" element={<LoginPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>

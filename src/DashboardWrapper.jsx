@@ -3,8 +3,10 @@ import { supabase } from './api/supabaseClient'
 import Dashboard from './Dashboard'
 import StaffDashboard from './StaffDashboard'
 import LoadingSpinner from './components/LoadingSpinner'
+import { useAuth } from "./context/AuthContext"
 
-export default function DashboardWrapper({ session, onLogout }) {
+export default function DashboardWrapper({ onLogout }) {
+  const { user: session } = useAuth()
   const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
