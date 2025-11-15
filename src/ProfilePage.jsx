@@ -1,20 +1,20 @@
 // src/pages/ProfilePage.jsx
 import { useEffect, useState } from 'react'
 import { getUserById, updateUser } from './api/user'
-import { getAppointmentsByUser, cancelAppointment, updateAppointment } from './api/appointments'
+//import { getAppointmentsByUser, cancelAppointment, updateAppointment } from './api/appointments'
 import ProfileButton from './ProfileButton.jsx'
-import { useNavigate, Navigate } from 'react-router-dom'
+//import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 
 export default function ProfilePage() {
   const { user } = useAuth() // 🔹 obtener usuario directamente del contexto
-  const navigate = useNavigate()
+  //const navigate = useNavigate()
   const [userData, setUserData] = useState({ full_name: '', phone: '', role: '' })
-  const [appointments, setAppointments] = useState([])
+  //const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const [editingId, setEditingId] = useState(null)
-  const [editingDate, setEditingDate] = useState('')
+  //const [editingId, setEditingId] = useState(null)
+  //const [editingDate, setEditingDate] = useState('')
 
   // 🔹 Redirigir si no hay usuario
   if (!user) return <Navigate to="/login" replace />
@@ -33,8 +33,8 @@ export default function ProfilePage() {
           role: u.role || ''
         })
 
-        const appts = await getAppointmentsByUser(userId)
-        setAppointments(appts)
+        //const appts = await getAppointmentsByUser(userId)
+        //setAppointments(appts)
       } catch (error) {
         console.error('Error cargando perfil:', error.message)
       }
@@ -61,7 +61,7 @@ export default function ProfilePage() {
       setLoading(false)
     }
   }
-
+  /*
   // 🔹 Cancelar cita
   const handleCancel = async (id) => {
     if (!window.confirm('¿Seguro que deseas cancelar esta cita?')) return
@@ -74,7 +74,7 @@ export default function ProfilePage() {
       alert('Error al cancelar la cita: ' + err.message)
     }
   }
-
+  
   // 🔹 Editar cita
   const handleEdit = async (id) => {
     if (!editingDate) return alert('Selecciona una nueva fecha y hora')
@@ -93,7 +93,7 @@ export default function ProfilePage() {
       alert('Error al editar la cita: ' + err.message)
     }
   }
-
+  */
   return (
     <div className="relative p-6 max-w-lg mx-auto">
 
@@ -143,7 +143,7 @@ export default function ProfilePage() {
 
         {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}
       </form>
-
+      {/*
       <hr className="my-6" />
 
       <h3 className="text-xl font-semibold mb-2">Mis Citas</h3>
@@ -189,6 +189,7 @@ export default function ProfilePage() {
           ))}
         </ul>
       )}
+      */}
     </div>
   )
 }

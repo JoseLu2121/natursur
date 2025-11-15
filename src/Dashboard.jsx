@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getAllAppointmentTypes } from './api/appointmentTypes'
+import { cancelAppointment, getAppointmentsByUser } from './api/appointments'
 import { supabase } from './api/supabaseClient'
 
 export default function Dashboard({ onLogout }) {
@@ -8,6 +9,8 @@ export default function Dashboard({ onLogout }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const [appointments, setAppointments] = useState([])
+
 
   // 🔹 Verificar sesión al montar
   useEffect(() => {
@@ -21,6 +24,8 @@ export default function Dashboard({ onLogout }) {
         navigate('/login', { replace: true })
         return
       }
+      const appts = await getAppointmentsByUser(user.id)
+      setAppointments(appts)
 
       setUser(user)
       setLoading(false)
@@ -49,6 +54,18 @@ export default function Dashboard({ onLogout }) {
       </div>
     )
   }
+
+  const handleCancel = async (id) => {
+      if (!window.confirm('¿Seguro que deseas cancelar esta cita?')) return
+      try {
+        await cancelAppointment(id)
+        setAppointments((prev) =>
+          prev.map((a) => (a.id === id ? { ...a, status: 'cancelled' } : a))
+        )
+      } catch (err) {
+        alert('Error al cancelar la cita: ' + err.message)
+      }
+    }
 
   return (
     <div className="relative min-h-screen bg-gray-50 p-6">
@@ -80,6 +97,54 @@ export default function Dashboard({ onLogout }) {
           ))}
         </ul>
       </div>
+
+      <hr className="my-6" />
+
+
+      <h3 className="text-xl font-semibold mb-2">Mis Citas</h3>
+
+      {appointments.length === 0 ? (
+        <p className="text-gray-500">No tienes citas registradas.</p>
+      ) : (
+        <ul className="space-y-3">
+          {appointments.map((appt) => (
+            <li
+              key={appt.id}
+              className="border rounded p-3 shadow-sm bg-white space-y-2"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-gray-800">
+                    {appt.appointment_type?.name || 'Sin tipo'}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(appt.start_at).toLocaleString()} —{' '}
+                    <span className="capitalize">{appt.status}</span>
+                  </p>
+                </div>
+              </div>
+
+              {appt.status !== 'cancelled' && appt.status !== 'completed' && (
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => navigate(`/appointments/edit/${appt.id}`)}
+                  className="bg-yellow-400 text-white text-sm px-2 py-1 rounded hover:bg-yellow-500"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleCancel(appt.id)}
+                  className="bg-red-500 text-white text-sm px-2 py-1 rounded hover:bg-red-600"
+                >
+                  Cancelar
+                </button>
+              </div>
+            )}
+            </li>
+          ))}
+        </ul>
+      )}    
+
     </div>
   )
 }
