@@ -104,8 +104,8 @@ function AppContent() {
             <Route
               path="/citas"
               element={
-                <PrivateRoute>
-                  <DashboardWrapper />
+                <PrivateRoute >
+                  <DashboardWrapper onLogout={handleLogout}/>
                 </PrivateRoute>
               }
             />

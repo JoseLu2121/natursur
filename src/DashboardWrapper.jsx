@@ -6,17 +6,22 @@ import LoadingSpinner from './components/LoadingSpinner'
 import { useAuth } from "./context/AuthContext"
 
 export default function DashboardWrapper({ onLogout }) {
-  const { user: session } = useAuth()
+  const { user } = useAuth()
   const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    
+    if (!user) {
+      return 
+    }
+    
     const fetchUserRole = async () => {
       try {
         const { data: userData, error } = await supabase
           .from('users')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('id', user.id)
           .single()
 
         if (error) throw error
@@ -29,7 +34,7 @@ export default function DashboardWrapper({ onLogout }) {
     }
 
     fetchUserRole()
-  }, [session])
+  }, [user])
 
   if (loading) {
     return (
@@ -40,8 +45,8 @@ export default function DashboardWrapper({ onLogout }) {
   }
 
   if (userRole === 'staff') {
-    return <StaffDashboard session={session} />
+    return <StaffDashboard session={user} />
   }
 
-  return <Dashboard session={session} onLogout={onLogout} />
+  return <Dashboard session={user} onLogout={onLogout} />
 }

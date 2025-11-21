@@ -2,40 +2,30 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getAllAppointmentTypes } from './api/appointmentTypes'
 import { cancelAppointment, getAppointmentsByUser } from './api/appointments'
-import { supabase } from './api/supabaseClient'
 
-export default function Dashboard({ onLogout }) {
+export default function Dashboard({ session, onLogout }) {
   const [appointmentTypes, setAppointmentTypes] = useState([])
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
   const [appointments, setAppointments] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  // 🔹 Verificar sesión al montar
+  const navigate = useNavigate()
+
+  // 🔹 Cargar citas del usuario al montar
   useEffect(() => {
-    const fetchSession = async () => {
-      const {
-        data: { user }
-      } = await supabase.auth.getUser()
+    if (!session) return
 
-      if (!user) {
-        navigate('/login', { replace: true })
-        return
-      }
-
-      const appts = await getAppointmentsByUser(user.id)
+    const loadUserData = async () => {
+      const appts = await getAppointmentsByUser(session.id)
       setAppointments(appts)
-
-      setUser(user)
       setLoading(false)
     }
 
-    fetchSession()
-  }, [navigate])
+    loadUserData()
+  }, [session])
 
-  // 🔹 Cargar tipos de citas
+  // 🔹 Cargar tipos de cita
   useEffect(() => {
-    const loadData = async () => {
+    const loadTypes = async () => {
       try {
         const types = await getAllAppointmentTypes()
         setAppointmentTypes(types)
@@ -43,7 +33,8 @@ export default function Dashboard({ onLogout }) {
         console.error('Error cargando tipos:', error.message)
       }
     }
-    loadData()
+
+    loadTypes()
   }, [])
 
   if (loading) {
@@ -56,10 +47,11 @@ export default function Dashboard({ onLogout }) {
 
   const handleCancel = async (id) => {
     if (!window.confirm('¿Seguro que deseas cancelar esta cita?')) return
+
     try {
       await cancelAppointment(id)
-      setAppointments((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, status: 'cancelled' } : a))
+      setAppointments(prev =>
+        prev.map(a => (a.id === id ? { ...a, status: 'cancelled' } : a))
       )
     } catch (err) {
       alert('Error al cancelar la cita: ' + err.message)
@@ -70,7 +62,7 @@ export default function Dashboard({ onLogout }) {
     <div className="relative min-h-screen bg-gray-50 p-6">
       <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl shadow p-6">
         <h2 className="text-xl font-semibold mb-2 text-gray-800">
-          Bienvenido, {user.email}
+          Bienvenido, {session.email}
         </h2>
 
         <button
@@ -83,6 +75,7 @@ export default function Dashboard({ onLogout }) {
         <hr className="my-6" />
 
         <h3 className="text-lg font-medium mb-3 text-gray-700">Tipos de Citas</h3>
+
         {appointmentTypes.length > 0 ? (
           <ul className="space-y-2">
             {appointmentTypes.map((type) => (
@@ -93,9 +86,13 @@ export default function Dashboard({ onLogout }) {
                 >
                   <div className="p-5 flex flex-col h-full">
                     <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-sky-900 mb-1">{type.name}</h4>
+                      <h4 className="text-lg font-semibold text-sky-900 mb-1">
+                        {type.name}
+                      </h4>
                       {type.description && (
-                        <p className="text-sm text-slate-600 line-clamp-3">{type.description}</p>
+                        <p className="text-sm text-slate-600 line-clamp-3">
+                          {type.description}
+                        </p>
                       )}
                     </div>
                     <div className="mt-4 text-right">
@@ -126,10 +123,7 @@ export default function Dashboard({ onLogout }) {
       ) : (
         <ul className="space-y-3">
           {appointments.map((appt) => (
-            <li
-              key={appt.id}
-              className="border rounded p-3 shadow-sm bg-white space-y-2"
-            >
+            <li key={appt.id} className="border rounded p-3 shadow-sm bg-white space-y-2">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-medium text-gray-800">

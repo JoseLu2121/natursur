@@ -202,7 +202,7 @@ export default function NavBar({ session, onLogout }) {
           </div>
         </div>
       </div>
-
+            
       {/* Mobile menu */}
       <div className={`${mobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
         <div className="space-y-1 pb-3 pt-2">
