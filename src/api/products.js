@@ -250,3 +250,112 @@ export const deleteProductImage = async (imageUrl) => {
     throw error
   }
 }
+
+export const getAllOrders = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,  
+        users (full_name, phone),  
+        order_items!fk_order_items_orders (
+          quantity,
+          unit_price_cents,
+          products!fk_order_items_products (
+            name
+          )
+        )
+      `)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  } catch (error) {
+    console.error('Error fetching all orders:', error)
+    throw error
+  }
+}
+
+export const getInventory = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('inventory')
+      .select(`
+        *,
+        products (
+          id,
+          name,
+          image_url,
+          price_cents
+        )
+      `)
+      .order('updated_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  } catch (error) {
+    console.error('Error fetching inventory:', error)
+    throw error
+  }
+}
+
+// 🆕 Añadir un producto del catálogo al inventario
+export const addProductToInventory = async (productId, quantity) => {
+  try {
+    // Upsert: Si ya existe, actualiza la cantidad (sumando? No, aquí definimos el stock inicial o reponemos)
+    // Para simplificar, si ya existe, vamos a sumar la cantidad.
+    
+    // 1. Ver si ya existe
+    const { data: existing } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('product_id', productId)
+      .single()
+
+    if (existing) {
+      // Actualizamos sumando
+      const { data, error } = await supabase
+        .from('inventory')
+        .update({ quantity: existing.quantity + parseInt(quantity) })
+        .eq('id', existing.id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    } else {
+      // Creamos nueva entrada
+      const { data, error } = await supabase
+        .from('inventory')
+        .insert({ product_id: productId, quantity: parseInt(quantity) })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    }
+  } catch (error) {
+    console.error('Error adding to inventory:', error)
+    throw error
+  }
+}
+
+// 🆕 Actualizar cantidad directamente (desde la tabla)
+export const updateInventoryQuantity = async (inventoryId, newQuantity) => {
+  try {
+    const { data, error } = await supabase
+      .from('inventory')
+      .update({ quantity: parseInt(newQuantity) })
+      .eq('id', inventoryId)
+      .select()
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error updating inventory:', error)
+    throw error
+  }
+}
+
+// 🆕 Eliminar del inventario (no borra el producto, solo lo saca del stock)
+export const removeFromInventory = async (inventoryId) => {
+  const { error } = await supabase.from('inventory').delete().eq('id', inventoryId)
+  if (error) throw error
+}

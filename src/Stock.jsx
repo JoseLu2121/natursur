@@ -1,96 +1,96 @@
 import { useState, useEffect } from 'react'
-import { getProducts, updateProductStock, deleteProduct } from './api/products'
-import ProductForm from './components/ProductForm'
+import { getInventory, updateInventoryQuantity, removeFromInventory } from './api/products'
+import ManualStockForm from './components/ManualStockForm'
 import LoadingSpinner from './components/LoadingSpinner'
 
 export default function Stock() {
-  const [products, setProducts] = useState([])
+  const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingStock, setEditingStock] = useState(null)
-  const [tempStock, setTempStock] = useState('')
+  const [showManualForm, setShowManualForm] = useState(false)
+  
+  // Estados para la edición en línea (fila por fila)
+  const [editingId, setEditingId] = useState(null)
+  const [tempQuantity, setTempQuantity] = useState('')
 
   useEffect(() => {
-    fetchProducts()
+    fetchInventory()
   }, [])
 
-  const fetchProducts = async () => {
+  const fetchInventory = async () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await getProducts()
-      setProducts(data)
+      const data = await getInventory()
+      setInventory(data)
     } catch (err) {
-      setError(err.message || 'Error al cargar productos')
+      setError(err.message || 'Error al cargar el inventario')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleProductCreated = async (newProduct) => {
-    setProducts(prev => [newProduct, ...prev])
-    setShowForm(false)
-  }
-
-  const handleUpdateStock = async (productId, newStock) => {
+  const handleUpdateStock = async (inventoryId, newQty) => {
     try {
-      await updateProductStock(productId, newStock)
-      setProducts(prev =>
-        prev.map(p =>
-          p.id === productId ? { ...p, stock: parseInt(newStock) } : p
-        )
-      )
-      setEditingStock(null)
-      setTempStock('')
+      await updateInventoryQuantity(inventoryId, newQty)
+      
+      // Actualizamos el estado local para reflejar el cambio sin recargar
+      setInventory(prev => prev.map(item => 
+        item.id === inventoryId ? { ...item, quantity: parseInt(newQty) } : item
+      ))
+      
+      setEditingId(null)
+      setTempQuantity('')
     } catch (err) {
-      setError(err.message || 'Error al actualizar stock')
+      alert('Error actualizando stock: ' + err.message)
     }
   }
 
-  const handleDeleteProduct = async (productId) => {
-    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      try {
-        await deleteProduct(productId)
-        setProducts(prev => prev.filter(p => p.id !== productId))
-      } catch (err) {
-        setError(err.message || 'Error al eliminar producto')
-      }
+  const handleDelete = async (inventoryId) => {
+    if (!confirm('¿Seguro que quieres quitar este producto del inventario? (El producto seguirá existiendo en el catálogo, pero con stock 0 implícito)')) {
+      return
+    }
+
+    try {
+      await removeFromInventory(inventoryId)
+      setInventory(prev => prev.filter(i => i.id !== inventoryId))
+    } catch (err) {
+      alert('Error al eliminar: ' + err.message)
     }
   }
 
-  const formatPrice = (cents) => {
-    return (cents / 100).toLocaleString('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-    })
+  const handleStockAdded = () => {
+    setShowManualForm(false)
+    fetchInventory() // Recargamos la lista para mostrar lo nuevo
   }
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <LoadingSpinner size={6} className="text-primary-600" />
+        <LoadingSpinner size={8} className="text-primary-600" />
       </div>
     )
   }
 
   return (
     <div className="space-y-8">
+      {/* Encabezado */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Gestión de Stock</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Control de Stock</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Gestiona tus productos y su disponibilidad
+            Gestión de productos físicos disponibles en el almacén.
           </p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
-          className="btn-primary"
+          onClick={() => setShowManualForm(true)}
+          className="btn-primary flex items-center gap-2"
         >
-          + Crear Producto
+          + Añadir Stock Manual
         </button>
       </div>
 
+      {/* Mensajes de error */}
       {error && (
         <div className="rounded-md bg-red-50 p-4">
           <div className="flex">
@@ -106,119 +106,122 @@ export default function Stock() {
         </div>
       )}
 
-      {showForm && (
-        <ProductForm
-          onProductCreated={handleProductCreated}
-          onCancel={() => setShowForm(false)}
+      {/* Modal de Formulario Manual */}
+      {showManualForm && (
+        <ManualStockForm
+          onStockAdded={handleStockAdded}
+          onCancel={() => setShowManualForm(false)}
         />
       )}
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-300 border border-primary-200 rounded-lg">
+      {/* Tabla de Inventario */}
+      <div className="overflow-hidden bg-white shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+        <table className="min-w-full divide-y divide-gray-300">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
                 Producto
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Descripción
+              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                Stock Actual
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Precio
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Stock
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            {products.length === 0 ? (
+            {inventory.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
-                  No hay productos disponibles
+                <td colSpan="3" className="px-6 py-12 text-center text-sm text-gray-500">
+                  <p className="font-medium text-gray-900 mb-1">Inventario vacío</p>
+                  <p>Usa el botón "+ Añadir Stock Manual" para registrar productos.</p>
                 </td>
               </tr>
             ) : (
-              products.map(product => (
-                <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      {product.image_url && (
-                        <img
-                          src={product.image_url}
-                          alt={product.name}
-                          className="h-10 w-10 object-cover rounded"
+              inventory.map((item) => (
+                <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                    <div className="flex items-center">
+                      {item.products?.image_url ? (
+                        <img 
+                          className="h-10 w-10 flex-shrink-0 rounded-full object-cover bg-gray-100" 
+                          src={item.products.image_url} 
+                          alt="" 
                         />
+                      ) : (
+                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
+                          Sin foto
+                        </div>
                       )}
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                      <div className="ml-4">
+                        <div className="font-medium text-gray-900">
+                          {item.products?.name || <span className="text-red-500 italic">Producto eliminado</span>}
+                        </div>
+                        <div className="text-gray-500 text-xs">ID Inv: {item.id}</div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600 max-w-xs truncate">
-                      {product.description || '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-primary-600">
-                      {formatPrice(product.price_cents)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {editingStock === product.id ? (
-                      <div className="flex gap-2">
+                  
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {editingId === item.id ? (
+                      <div className="flex items-center gap-2">
                         <input
                           type="number"
-                          value={tempStock}
-                          onChange={(e) => setTempStock(e.target.value)}
-                          className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
                           min="0"
+                          value={tempQuantity}
+                          onChange={(e) => setTempQuantity(e.target.value)}
+                          className="w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-1"
+                          autoFocus
                         />
-                        <button
-                          onClick={() => handleUpdateStock(product.id, tempStock)}
-                          className="text-green-600 hover:text-green-800 font-semibold text-sm"
+                        <button 
+                          onClick={() => handleUpdateStock(item.id, tempQuantity)} 
+                          className="text-green-600 hover:text-green-800 font-bold p-1"
+                          title="Guardar"
                         >
                           ✓
                         </button>
-                        <button
-                          onClick={() => setEditingStock(null)}
-                          className="text-red-600 hover:text-red-800 font-semibold text-sm"
+                        <button 
+                          onClick={() => setEditingId(null)} 
+                          className="text-red-600 hover:text-red-800 font-bold p-1"
+                          title="Cancelar"
                         >
                           ✕
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            product.stock > 0
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {product.stock}
-                        </span>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        item.quantity > 10 
+                          ? 'bg-green-100 text-green-800' 
+                          : item.quantity > 0 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : 'bg-red-100 text-red-800'
+                      }`}>
+                        {item.quantity} uds.
+                      </span>
+                    )}
+                  </td>
+
+                  <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                    {editingId !== item.id && (
+                      <>
                         <button
                           onClick={() => {
-                            setEditingStock(product.id)
-                            setTempStock(product.stock)
+                            setEditingId(item.id)
+                            setTempQuantity(item.quantity)
                           }}
-                          className="text-primary-600 hover:text-primary-800 font-semibold text-sm"
+                          className="text-primary-600 hover:text-primary-900 mr-4"
                         >
                           Editar
                         </button>
-                      </div>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Quitar
+                        </button>
+                      </>
                     )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => handleDeleteProduct(product.id)}
-                      className="text-red-600 hover:text-red-800 font-semibold text-sm"
-                    >
-                      Eliminar
-                    </button>
                   </td>
                 </tr>
               ))

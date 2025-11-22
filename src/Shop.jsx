@@ -1,14 +1,21 @@
 import { useState, useEffect } from 'react'
-import { getProducts } from './api/products'
+import { getProducts, createOrder } from './api/products'
 import { useCart } from './context/CartContext'
+import { useAuth } from './context/AuthContext'
 import LoadingSpinner from './components/LoadingSpinner'
+import { useNavigate } from 'react-router-dom'
 
 export default function Shop() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showCart, setShowCart] = useState(false)
-  const { addToCart, cartItems, removeFromCart, updateQuantity, getTotalPrice } = useCart()
+  
+  const { addToCart, cartItems, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  const [ordering, setOrdering] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -21,7 +28,7 @@ export default function Shop() {
       const data = await getProducts()
       setProducts(data)
     } catch (error) {
-      setError('Error loading products: ' + error.message)
+      setError('Error cargando productos: ' + error.message)
     } finally {
       setLoading(false)
     }
@@ -29,6 +36,32 @@ export default function Shop() {
 
   const handleAddToCart = (product) => {
     addToCart(product, 1)
+  }
+
+  const handleCheckout = async () => {
+    if (!user) return alert('Debes iniciar sesión para comprar')
+    
+    try {
+      setOrdering(true)
+      
+      const itemsToOrder = cartItems.map(item => ({
+        product_id: item.id,
+        quantity: item.quantity,
+        unit_price_cents: item.price_cents
+      }))
+
+      await createOrder(user.id, itemsToOrder)
+
+      clearCart()
+      alert('¡Pedido realizado con éxito! Te contactaremos pronto.')
+      setShowCart(false)
+
+    } catch (err) {
+      console.error(err)
+      alert('Error al realizar el pedido: ' + err.message)
+    } finally {
+      setOrdering(false)
+    }
   }
 
   const formatPrice = (cents) => {
@@ -85,12 +118,14 @@ export default function Shop() {
           updateQuantity={updateQuantity}
           getTotalPrice={getTotalPrice}
           formatPrice={formatPrice}
+          onCheckout={handleCheckout}
+          ordering={ordering}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.length === 0 ? (
             <div className="col-span-full text-center py-12">
-              <p className="text-gray-500">No hay productos disponibles</p>
+              <p className="text-gray-500">No hay productos disponibles en el catálogo.</p>
             </div>
           ) : (
             products.map(product => (
@@ -109,29 +144,23 @@ export default function Shop() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     {product.name}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4">
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                     {product.description || 'Sin descripción disponible'}
                   </p>
+                  
+                  {/* CAMBIO: Eliminada la lógica visual de stock */}
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-2xl font-bold text-primary-600">
                       {formatPrice(product.price_cents)}
                     </span>
-                    <span
-                      className={`text-sm font-medium ${
-                        product.stock > 0
-                          ? 'text-green-600'
-                          : 'text-red-600'
-                      }`}
-                    >
-                      Stock: {product.stock}
-                    </span>
                   </div>
+
+                  {/* CAMBIO: Botón siempre habilitado */}
                   <button
                     onClick={() => handleAddToCart(product)}
-                    disabled={product.stock <= 0}
-                    className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full btn-primary"
                   >
-                    {product.stock > 0 ? 'Añadir al carrito' : 'Sin stock'}
+                    Añadir al carrito
                   </button>
                 </div>
               </div>
@@ -143,7 +172,7 @@ export default function Shop() {
   )
 }
 
-function CartView({ cartItems, removeFromCart, updateQuantity, getTotalPrice, formatPrice }) {
+function CartView({ cartItems, removeFromCart, updateQuantity, getTotalPrice, formatPrice, onCheckout, ordering }) {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-900">Mi Carrito</h2>
@@ -203,8 +232,12 @@ function CartView({ cartItems, removeFromCart, updateQuantity, getTotalPrice, fo
             </div>
           </div>
 
-          <button className="w-full btn-primary py-3 text-lg">
-            Proceder al pago
+          <button 
+            onClick={onCheckout}
+            disabled={ordering}
+            className="w-full btn-primary py-3 text-lg"
+          >
+            {ordering ? 'Procesando...' : 'Confirmar Pedido'}
           </button>
         </>
       )}

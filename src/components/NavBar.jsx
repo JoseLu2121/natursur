@@ -1,23 +1,18 @@
-import { Fragment, useState, useEffect } from 'react'
+import { Fragment, useState } from 'react' // Quitamos useEffect
 import { NavLink, useNavigate } from 'react-router-dom'
 import { Menu, Transition } from '@headlessui/react'
-import { supabase } from '../api/supabaseClient'
+import { useAuth } from '../context/AuthContext' // Usamos tu hook personalizado
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-function Avatar({ session, onLogout }) {
+function Avatar({ user, onLogout }) { // Recibe user directamente
   const navigate = useNavigate()
-  if (!session) return null
+  if (!user) return null
   
-  const name = session.user?.user_metadata?.full_name || session.user?.email || 'U'
-  const initials = name
-    .split(' ')
-    .map(p => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
+  const name = user.user_metadata?.full_name || user.email || 'U'
+  const initials = name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()
 
   return (
     <Menu as="div" className="relative ml-3">
@@ -39,26 +34,14 @@ function Avatar({ session, onLogout }) {
         <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <Menu.Item>
             {({ active }) => (
-              <button
-                onClick={() => navigate('/profile')}
-                className={classNames(
-                  active ? 'bg-gray-100' : '',
-                  'block w-full px-4 py-2 text-left text-sm text-gray-700'
-                )}
-              >
+              <button onClick={() => navigate('/profile')} className={classNames(active ? 'bg-gray-100' : '', 'block w-full px-4 py-2 text-left text-sm text-gray-700')}>
                 Mi Perfil
               </button>
             )}
           </Menu.Item>
           <Menu.Item>
             {({ active }) => (
-              <button
-                onClick={onLogout}
-                className={classNames(
-                  active ? 'bg-gray-100' : '',
-                  'block w-full px-4 py-2 text-left text-sm text-gray-700'
-                )}
-              >
+              <button onClick={onLogout} className={classNames(active ? 'bg-gray-100' : '', 'block w-full px-4 py-2 text-left text-sm text-gray-700')}>
                 Cerrar sesión
               </button>
             )}
@@ -69,32 +52,18 @@ function Avatar({ session, onLogout }) {
   )
 }
 
-export default function NavBar({ session, onLogout }) {
+export default function NavBar() { // Ya no necesita props, usa el contexto
   const navigate = useNavigate()
+  const { user, role, signOut } = useAuth() // Consumimos todo del contexto
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [userRole, setUserRole] = useState(null)
 
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (session?.user?.id) {
-        try {
-          const { data, error } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', session.user.id)
-            .single()
+  const handleLogout = async () => {
+    await signOut()
+    navigate('/login')
+  }
 
-          if (!error && data) {
-            setUserRole(data.role)
-          }
-        } catch (err) {
-          console.error('Error fetching user role:', err)
-        }
-      }
-    }
-
-    fetchUserRole()
-  }, [session])
+  // Lógica de visualización
+  const isStaffOrAdmin = role === 'admin' || role === 'staff'
 
   return (
     <nav className="bg-white shadow">
@@ -103,167 +72,90 @@ export default function NavBar({ session, onLogout }) {
           <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
             <button
               type="button"
-              className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+              className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              <span className="sr-only">Abrir menú principal</span>
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                />
+              <span className="sr-only">Abrir menú</span>
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
               </svg>
             </button>
           </div>
 
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div className="flex flex-shrink-0 items-center">
-              <NavLink to="/" className="text-xl font-bold text-primary-600">
-                Natursur
-              </NavLink>
+              <NavLink to="/" className="text-xl font-bold text-primary-600">Natursur</NavLink>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <NavLink
-                to="/"
-                end
-                className={({ isActive }) =>
-                  classNames(
-                    isActive
-                      ? 'border-primary-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                    'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
-                  )
-                }
-              >
+              <NavLink to="/" end className={({ isActive }) => classNames(isActive ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700', 'inline-flex items-centerXH border-b-2 px-1 pt-1 text-sm font-medium')}>
                 Home
               </NavLink>
-              <NavLink
-                to="/citas"
-                className={({ isActive }) =>
-                  classNames(
-                    isActive
-                      ? 'border-primary-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                    'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
-                  )
-                }
-              >
+              <NavLink to="/citas" className={({ isActive }) => classNames(isActive ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700', 'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium')}>
                 Citas
               </NavLink>
-              <NavLink
-                to="/store"
-                className={({ isActive }) =>
-                  classNames(
-                    isActive
-                      ? 'border-primary-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                    'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
-                  )
-                }
-              >
+              
+              {/* SIEMPRE visible */}
+              <NavLink to="/store" className={({ isActive }) => classNames(isActive ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700', 'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium')}>
                 Tienda
               </NavLink>
-              {(userRole === 'admin' || userRole === 'staff') && (
-                <NavLink
-                  to="/stock"
-                  className={({ isActive }) =>
-                    classNames(
-                      isActive
-                        ? 'border-primary-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                      'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
-                    )
-                  }
-                >
-                  Stock
-                </NavLink>
+
+              {/* SOLO Admin/Staff */}
+              {isStaffOrAdmin && (
+                <>
+                  <NavLink
+                    to="/stock"
+                    className={({ isActive }) =>
+                      classNames(
+                        isActive
+                          ? 'border-primary-500 text-gray-900'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                        'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
+                      )
+                    }
+                  >
+                    Stock
+                  </NavLink>
+                  
+                  {/* NUEVO ENLACE DE PEDIDOS */}
+                  <NavLink
+                    to="/orders"
+                    className={({ isActive }) =>
+                      classNames(
+                        isActive
+                          ? 'border-primary-500 text-gray-900'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                        'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
+                      )
+                    }
+                  >
+                    Pedidos
+                  </NavLink>
+                </>
               )}
+
+              
+
             </div>
           </div>
 
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            {session ? (
-              <Avatar session={session} onLogout={onLogout} />
+            {user ? (
+              <Avatar user={user} onLogout={handleLogout} />
             ) : (
-              <button
-                onClick={() => navigate('/login')}
-                className="btn-primary"
-              >
-                Iniciar sesión
-              </button>
+              <button onClick={() => navigate('/login')} className="btn-primary">Iniciar sesión</button>
             )}
           </div>
         </div>
       </div>
-            
+
       {/* Mobile menu */}
       <div className={`${mobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
         <div className="space-y-1 pb-3 pt-2">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              classNames(
-                isActive
-                  ? 'bg-primary-50 border-primary-500 text-primary-700'
-                  : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700',
-                'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
-              )
-            }
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Home
-          </NavLink>
-          <NavLink
-            to="/citas"
-            className={({ isActive }) =>
-              classNames(
-                isActive
-                  ? 'bg-primary-50 border-primary-500 text-primary-700'
-                  : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700',
-                'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
-              )
-            }
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Citas
-          </NavLink>
-          <NavLink
-            to="/store"
-            className={({ isActive }) =>
-              classNames(
-                isActive
-                  ? 'bg-primary-50 border-primary-500 text-primary-700'
-                  : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700',
-                'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
-              )
-            }
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Tienda
-          </NavLink>
-          {(userRole === 'admin' || userRole === 'staff') && (
-            <NavLink
-              to="/stock"
-              className={({ isActive }) =>
-                classNames(
-                  isActive
-                    ? 'bg-primary-50 border-primary-500 text-primary-700'
-                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700',
-                  'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
-                )
-              }
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Stock
-            </NavLink>
+          <NavLink to="/" end onClick={() => setMobileMenuOpen(false)} className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700">Home</NavLink>
+          <NavLink to="/citas" onClick={() => setMobileMenuOpen(false)} className="blockXB border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700">Citas</NavLink>
+          <NavLink to="/store" onClick={() => setMobileMenuOpen(false)} className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700">Tienda</NavLink>
+          {isStaffOrAdmin && (
+             <NavLink to="/stock" onClick={() => setMobileMenuOpen(false)} className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700">Stock</NavLink>
           )}
         </div>
       </div>
