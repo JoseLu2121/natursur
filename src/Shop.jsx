@@ -13,7 +13,6 @@ export default function Shop() {
   
   const { addToCart, cartItems, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart()
   const { user } = useAuth()
-  const navigate = useNavigate()
 
   const [ordering, setOrdering] = useState(false)
 
