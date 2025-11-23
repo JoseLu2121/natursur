@@ -1,26 +1,29 @@
-import { Fragment, useState } from 'react' // Quitamos useEffect
+import { Fragment, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { Menu, Transition } from '@headlessui/react'
-import { useAuth } from '../context/AuthContext' // Usamos tu hook personalizado
+import { useAuth } from '../context/AuthContext'
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
+const baseLink = 'inline-flex items-center rounded-full px-3 py-2 text-sm font-semibold transition'
 
-function Avatar({ user, onLogout }) { // Recibe user directamente
+function Avatar({ user, onLogout }) {
   const navigate = useNavigate()
   if (!user) return null
-  
-  const name = user.user_metadata?.full_name || user.email || 'U'
-  const initials = name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()
+
+  const name = user.user_metadata?.full_name || user.email || 'Natursur'
+  const initials = name
+    .split(' ')
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
-    <Menu as="div" className="relative ml-3">
-      <Menu.Button className="flex rounded-full bg-primary-600 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600">
-        <span className="sr-only">Abrir menú de usuario</span>
-        <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold">
+    <Menu as="div" className="relative ml-4">
+      <Menu.Button className="flex items-center gap-3 rounded-full border border-white/50 bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 shadow-lg shadow-emerald-100 backdrop-blur">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-lime-500 text-white">
           {initials}
         </div>
+        <span className="hidden sm:inline">{name}</span>
       </Menu.Button>
       <Transition
         as={Fragment}
@@ -31,17 +34,23 @@ function Avatar({ user, onLogout }) { // Recibe user directamente
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <Menu.Items className="absolute right-0 z-20 mt-3 w-56 origin-top-right rounded-2xl border border-white/70 bg-white/95 p-2 shadow-2xl shadow-emerald-100 backdrop-blur">
           <Menu.Item>
             {({ active }) => (
-              <button onClick={() => navigate('/profile')} className={classNames(active ? 'bg-gray-100' : '', 'block w-full px-4 py-2 text-left text-sm text-gray-700')}>
+              <button
+                onClick={() => navigate('/profile')}
+                className={`w-full rounded-xl px-4 py-2 text-left text-sm font-medium ${active ? 'bg-emerald-50 text-emerald-700' : 'text-gray-700'}`}
+              >
                 Mi Perfil
               </button>
             )}
           </Menu.Item>
           <Menu.Item>
             {({ active }) => (
-              <button onClick={onLogout} className={classNames(active ? 'bg-gray-100' : '', 'block w-full px-4 py-2 text-left text-sm text-gray-700')}>
+              <button
+                onClick={onLogout}
+                className={`w-full rounded-xl px-4 py-2 text-left text-sm font-medium ${active ? 'bg-red-50 text-red-600' : 'text-gray-700'}`}
+              >
                 Cerrar sesión
               </button>
             )}
@@ -52,113 +61,106 @@ function Avatar({ user, onLogout }) { // Recibe user directamente
   )
 }
 
-export default function NavBar() { // Ya no necesita props, usa el contexto
+export default function NavBar() {
   const navigate = useNavigate()
-  const { user, role, signOut } = useAuth() // Consumimos todo del contexto
+  const { user, role, signOut } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const isStaffOrAdmin = role === 'admin' || role === 'staff'
 
   const handleLogout = async () => {
     await signOut()
     navigate('/login')
   }
 
-  // Lógica de visualización
-  const isStaffOrAdmin = role === 'admin' || role === 'staff'
+  const navItems = [
+    { to: '/', label: 'Inicio', end: true },
+    { to: '/citas', label: 'Citas' },
+    { to: '/store', label: 'Tienda' }
+  ]
+
+  const staffLinks = [
+    { to: '/stock', label: 'Stock' },
+    { to: '/orders', label: 'Pedidos' }
+  ]
 
   return (
-    <nav className="bg-white shadow">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative flex h-16 justify-between">
-          <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-            <button
-              type="button"
-              className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <span className="sr-only">Abrir menú</span>
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-            <div className="flex flex-shrink-0 items-center">
-              <NavLink to="/" className="text-xl font-bold text-primary-600">Natursur</NavLink>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <NavLink to="/" end className={({ isActive }) => classNames(isActive ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700', 'inline-flex items-centerXH border-b-2 px-1 pt-1 text-sm font-medium')}>
-                Home
-              </NavLink>
-              <NavLink to="/citas" className={({ isActive }) => classNames(isActive ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700', 'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium')}>
-                Citas
-              </NavLink>
-              
-              {/* SIEMPRE visible */}
-              <NavLink to="/store" className={({ isActive }) => classNames(isActive ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700', 'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium')}>
-                Tienda
-              </NavLink>
-
-              {/* SOLO Admin/Staff */}
-              {isStaffOrAdmin && (
-                <>
-                  <NavLink
-                    to="/stock"
-                    className={({ isActive }) =>
-                      classNames(
-                        isActive
-                          ? 'border-primary-500 text-gray-900'
-                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                        'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
-                      )
-                    }
-                  >
-                    Stock
-                  </NavLink>
-                  
-                  {/* NUEVO ENLACE DE PEDIDOS */}
-                  <NavLink
-                    to="/orders"
-                    className={({ isActive }) =>
-                      classNames(
-                        isActive
-                          ? 'border-primary-500 text-gray-900'
-                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                        'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
-                      )
-                    }
-                  >
-                    Pedidos
-                  </NavLink>
-                </>
-              )}
-
-              
-
-            </div>
-          </div>
-
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            {user ? (
-              <Avatar user={user} onLogout={handleLogout} />
-            ) : (
-              <button onClick={() => navigate('/login')} className="btn-primary">Iniciar sesión</button>
-            )}
-          </div>
+    <header className="sticky top-0 z-30 border-b border-white/50 bg-white/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4">
+        <div className="flex items-center gap-3">
+          <button
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/70 bg-white/80 text-emerald-600 shadow-lg shadow-emerald-100 transition hover:-translate-y-0.5 hover:shadow-emerald-200 sm:hidden"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+          >
+            <span className="sr-only">Abrir menú</span>
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <NavLink to="/" className="flex items-center gap-2 text-2xl font-semibold text-emerald-900">
+            <span className="rounded-2xl bg-gradient-to-r from-emerald-500 to-lime-500 px-3 py-1 text-white shadow-lg shadow-emerald-200">
+              N
+            </span>
+            Natursur
+          </NavLink>
         </div>
-      </div>
 
-      {/* Mobile menu */}
-      <div className={`${mobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
-        <div className="space-y-1 pb-3 pt-2">
-          <NavLink to="/" end onClick={() => setMobileMenuOpen(false)} className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700">Home</NavLink>
-          <NavLink to="/citas" onClick={() => setMobileMenuOpen(false)} className="blockXB border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700">Citas</NavLink>
-          <NavLink to="/store" onClick={() => setMobileMenuOpen(false)} className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700">Tienda</NavLink>
-          {isStaffOrAdmin && (
-             <NavLink to="/stock" onClick={() => setMobileMenuOpen(false)} className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700">Stock</NavLink>
+        <nav className="hidden items-center gap-2 sm:flex">
+          {[...navItems, ...(isStaffOrAdmin ? staffLinks : [])].map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `${baseLink} ${isActive ? 'bg-white text-emerald-600 shadow-inner shadow-emerald-100' : 'text-gray-500 hover:text-gray-900 hover:bg-white/70'}`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="flex items-center">
+          {user ? (
+            <Avatar user={user} onLogout={handleLogout} />
+          ) : (
+            <button onClick={() => navigate('/login')} className="btn-primary">
+              Iniciar sesión
+            </button>
           )}
         </div>
       </div>
-    </nav>
+
+      {mobileMenuOpen && (
+        <div className="border-t border-white/60 bg-white/90 px-4 pb-6 pt-4 shadow-xl shadow-emerald-100 sm:hidden">
+          <div className="flex flex-col gap-2">
+            {[...navItems, ...(isStaffOrAdmin ? staffLinks : [])].map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={() => setMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `${baseLink} w-full ${isActive ? 'bg-emerald-100 text-emerald-800' : 'text-gray-600 hover:bg-white'}`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+            {!user && (
+              <button
+                className="btn-secondary w-full"
+                onClick={() => {
+                  navigate('/login')
+                  setMobileMenuOpen(false)
+                }}
+              >
+                Iniciar sesión
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
   )
 }

@@ -39,8 +39,8 @@ export default function Dashboard({ session, onLogout }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Cargando...
+      <div className="flex min-h-[320px] items-center justify-center rounded-3xl border border-white/60 bg-white/80 text-lg font-semibold text-emerald-700">
+        Cargando tu panel...
       </div>
     )
   }
@@ -59,103 +59,108 @@ export default function Dashboard({ session, onLogout }) {
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-50 p-6">
-      <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl shadow p-6">
-        <h2 className="text-xl font-semibold mb-2 text-gray-800">
-          Bienvenido, {session.email}
-        </h2>
+    <div className="space-y-10">
+      <section className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-xl shadow-emerald-100 backdrop-blur">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">Bienvenido</p>
+            <h2 className="text-2xl font-semibold text-gray-900">{session.email}</h2>
+            <p className="text-gray-500">Gestiona tus reservas y descubre nuevos rituales.</p>
+          </div>
+          <button
+            onClick={onLogout}
+            className="inline-flex items-center gap-2 rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+          >
+            Cerrar sesión
+          </button>
+        </div>
 
-        <button
-          onClick={onLogout}
-          className="bg-red-500 hover:bg-red-600 text-white rounded-lg px-4 py-2 text-sm mt-2"
-        >
-          Cerrar sesión
-        </button>
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-gray-900">Tipos de Citas</h3>
+          {appointmentTypes.length > 0 ? (
+            <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+              {appointmentTypes.map((type) => (
+                <li key={type.id}>
+                  <Link
+                    to={`/appointment-type/${type.id}`}
+                    className="block h-full rounded-2xl border border-emerald-100 bg-white/80 p-5 shadow-lg shadow-emerald-100 transition hover:-translate-y-0.5 hover:border-emerald-200"
+                  >
+                    <h4 className="text-lg font-semibold text-gray-900">{type.name}</h4>
+                    {type.description && (
+                      <p className="mt-2 text-sm text-gray-600 line-clamp-3">{type.description}</p>
+                    )}
+                    <span className="mt-4 inline-flex items-center text-sm font-semibold text-emerald-600">
+                      Reservar
+                      <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-6 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/80 p-6 text-center text-sm text-emerald-700">
+              No hay tipos de citas disponibles por ahora.
+            </p>
+          )}
+        </div>
+      </section>
 
-        <hr className="my-6" />
+      <section className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-xl shadow-emerald-100 backdrop-blur">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">Agenda</p>
+            <h3 className="text-2xl font-semibold text-gray-900">Mis citas</h3>
+          </div>
+          <button
+            onClick={() => navigate('/my-appointments')}
+            className="text-sm font-semibold text-emerald-600 hover:underline"
+          >
+            Ver todo
+          </button>
+        </div>
 
-        <h3 className="text-lg font-medium mb-3 text-gray-700">Tipos de Citas</h3>
-
-        {appointmentTypes.length > 0 ? (
-          <ul className="space-y-2">
-            {appointmentTypes.map((type) => (
-              <li key={type.id}>
-                <Link
-                  to={`/appointment-type/${type.id}`}
-                  className="block border border-emerald-100 rounded-2xl bg-white shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
-                >
-                  <div className="p-5 flex flex-col h-full">
-                    <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-sky-900 mb-1">
-                        {type.name}
-                      </h4>
-                      {type.description && (
-                        <p className="text-sm text-slate-600 line-clamp-3">
-                          {type.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="mt-4 text-right">
-                      <span className="inline-block text-sm text-emerald-700 font-medium hover:underline">
-                        Reservar →
-                      </span>
-                    </div>
+        {appointments.length === 0 ? (
+          <p className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-6 text-center text-sm text-gray-500">
+            No tienes citas registradas por ahora.
+          </p>
+        ) : (
+          <ul className="mt-6 space-y-4">
+            {appointments.map((appt) => (
+              <li key={appt.id} className="rounded-2xl border border-gray-100 bg-white/90 p-4 shadow">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-base font-semibold text-gray-900">
+                      {appt.appointment_type?.name || 'Sin tipo'}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(appt.start_at).toLocaleString()} · <span className="capitalize">{appt.status}</span>
+                    </p>
                   </div>
-                </Link>
+
+                  {appt.status !== 'cancelled' && appt.status !== 'completed' && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => navigate(`/appointments/edit/${appt.id}`)}
+                        className="rounded-full border border-amber-200 px-4 py-1.5 text-sm font-semibold text-amber-600 transition hover:bg-amber-50"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleCancel(appt.id)}
+                        className="rounded-full border border-red-200 px-4 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="text-slate-500 text-sm text-center py-10">
-            No hay tipos de citas disponibles.
-          </p>
         )}
-
-        <footer className="mt-10 text-center text-xs text-slate-400">© 2025 Natursur</footer>
-      </div>
-
-      <hr className="my-6" />
-
-      <h3 className="text-xl font-semibold mb-2">Mis Citas</h3>
-
-      {appointments.length === 0 ? (
-        <p className="text-gray-500">No tienes citas registradas.</p>
-      ) : (
-        <ul className="space-y-3">
-          {appointments.map((appt) => (
-            <li key={appt.id} className="border rounded p-3 shadow-sm bg-white space-y-2">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-800">
-                    {appt.appointment_type?.name || 'Sin tipo'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(appt.start_at).toLocaleString()} —{' '}
-                    <span className="capitalize">{appt.status}</span>
-                  </p>
-                </div>
-              </div>
-
-              {appt.status !== 'cancelled' && appt.status !== 'completed' && (
-                <div className="flex items-center gap-2 mt-2">
-                  <button
-                    onClick={() => navigate(`/appointments/edit/${appt.id}`)}
-                    className="bg-yellow-400 text-white text-sm px-2 py-1 rounded hover:bg-yellow-500"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleCancel(appt.id)}
-                    className="bg-red-500 text-white text-sm px-2 py-1 rounded hover:bg-red-600"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      </section>
     </div>
   )
 }

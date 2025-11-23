@@ -150,30 +150,30 @@ export default function AppointmentTypeDetail() {
 
   if (loading)
     return (
-      <div className="min-h-[240px] flex items-center justify-center">
-        <div className="animate-pulse text-emerald-600">Cargando...</div>
+      <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-white/60 bg-white/80 text-emerald-700">
+        <div className="animate-pulse">Cargando...</div>
       </div>
     )
 
   return (
-    <div className="max-w-3xl mx-auto p-6 md:p-10 bg-white border border-emerald-100 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+    <div className="mx-auto max-w-4xl space-y-6 rounded-[32px] border border-white/70 bg-white/85 p-6 shadow-2xl shadow-emerald-100 backdrop-blur">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="mb-6 flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-200 bg-gray-100 hover:bg-gray-200 shadow-sm text-slate-700"
+          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/80 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:-translate-y-0.5 hover:bg-gray-50"
           aria-label="Volver"
         >
           <span className="text-lg">←</span>
-          <span className="text-sm">Volver</span>
+          <span>Volver</span>
         </button>
 
         <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-semibold text-sky-900">
+          <h1 className="text-3xl font-semibold text-gray-900">
             {appointmentType.name}
           </h1>
           {appointmentType.description && (
-            <p className="mt-1 text-sm text-slate-600">{appointmentType.description}</p>
+            <p className="mt-2 text-sm text-gray-500">{appointmentType.description}</p>
           )}
         </div>
       </div>
@@ -181,8 +181,8 @@ export default function AppointmentTypeDetail() {
       {/* Selección de masajista y tarifa */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Masajista */}
-        <section className="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
-          <h2 className="text-lg font-medium text-emerald-700 mb-3">
+        <section className="rounded-2xl border border-emerald-100/80 bg-white/90 p-5 shadow-lg shadow-emerald-50">
+          <h2 className="mb-3 text-lg font-semibold text-emerald-700">
             Selecciona un masajista
           </h2>
 
@@ -191,14 +191,14 @@ export default function AppointmentTypeDetail() {
               {staffMembers.map((staff) => (
                 <label
                   key={staff.id}
-                  className={`flex items-center justify-between gap-3 p-3 rounded-lg cursor-pointer transition-shadow outline-none ${
+                  className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition ${
                     selectedStaff?.id === staff.id
-                      ? 'ring-2 ring-emerald-200 shadow-md bg-emerald-50'
-                      : 'hover:shadow hover:bg-emerald-50'
+                      ? 'border-emerald-200 bg-emerald-50 shadow-lg shadow-emerald-100'
+                      : 'border-transparent bg-white/70 hover:border-emerald-100 hover:bg-emerald-50/60'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-semibold">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                       {staff.full_name
                         .split(' ')
                         .map((n) => n[0])
@@ -238,34 +238,34 @@ export default function AppointmentTypeDetail() {
         </section>
 
         {/* Tarifa */}
-        <section className="bg-white border border-sky-50 rounded-2xl p-5 shadow-sm">
-          <h2 className="text-lg font-medium text-sky-700 mb-3">Selecciona una tarifa</h2>
+        <section className="rounded-2xl border border-emerald-100/80 bg-white/90 p-5 shadow-lg shadow-emerald-50">
+          <h2 className="mb-3 text-lg font-semibold text-emerald-700">Selecciona una tarifa</h2>
 
           {!selectedStaff ? (
-            <p className="text-sm text-slate-500">Selecciona primero un masajista</p>
+            <p className="text-sm text-gray-500">Selecciona primero un masajista</p>
           ) : tariffs.length === 0 ? (
-            <p className="text-sm text-slate-500">Cargando tarifas…</p>
+            <p className="text-sm text-gray-500">Cargando tarifas…</p>
           ) : (
             <div className="space-y-3">
               {tariffs.map((t) => (
                 <label
                   key={t.id}
-                  className={`flex items-center justify-between gap-3 p-3 rounded-lg cursor-pointer transition-shadow ${
+                  className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition ${
                     selectedTariff?.id === t.id
-                      ? 'ring-2 ring-sky-100 shadow-md bg-sky-50'
-                      : 'hover:shadow hover:bg-sky-50'
+                      ? 'border-emerald-200 bg-emerald-50 shadow-lg shadow-emerald-100'
+                      : 'border-transparent bg-white/70 hover:border-emerald-100 hover:bg-emerald-50/60'
                   }`}
                 >
                   <div>
-                    <div className="font-medium text-slate-800">{t.name}</div>
-                    <div className="text-xs text-slate-500">
+                    <div className="font-semibold text-gray-900">{t.name}</div>
+                    <div className="text-xs text-gray-500">
                       {t.sessions ? `${t.sessions} sesiones · ` : ''}
                       {t.duration_minutes} min
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="font-medium text-slate-800">
+                    <div className="font-semibold text-gray-900">
                       {t.price_cents ? `${(t.price_cents / 100).toFixed(2)}€` : 'Gratis'}
                     </div>
                     <input
@@ -291,17 +291,17 @@ export default function AppointmentTypeDetail() {
 
       {/* Fecha y slots */}
       {selectedTariff && (
-        <div className="mt-6 bg-white border border-emerald-50 rounded-2xl p-5 shadow-sm">
+        <div className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-lg shadow-emerald-100">
           <div className="flex flex-col md:flex-row md:items-end md:gap-4 gap-3">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-semibold text-gray-600">
                 Selecciona una fecha
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="mt-2 w-full md:w-64 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-2 text-gray-700 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-200"
               />
             </div>
 
@@ -309,10 +309,10 @@ export default function AppointmentTypeDetail() {
               <button
                 onClick={fetchSlots}
                 disabled={!date || loadingSlots}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-md font-medium shadow-sm transition ${
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
                   !date || loadingSlots
-                    ? 'bg-gray-200 text-slate-500 cursor-not-allowed'
-                    : 'bg-gray-100 text-slate-700 hover:bg-gray-200'
+                    ? 'bg-gray-200 text-gray-500'
+                    : 'border border-emerald-200 bg-white/80 text-emerald-700 hover:bg-emerald-50'
                 }`}
               >
                 {loadingSlots ? 'Buscando…' : 'Ver horarios disponibles'}
@@ -323,7 +323,7 @@ export default function AppointmentTypeDetail() {
                   setDate('')
                   setAvailableSlots([])
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-slate-200 bg-gray-100 text-slate-700 hover:bg-gray-200"
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50"
               >
                 Limpiar
               </button>
@@ -334,7 +334,7 @@ export default function AppointmentTypeDetail() {
           <div className="mt-4">
             {availableSlots.length > 0 ? (
               <>
-                <div className="text-sm text-slate-600 mb-3">
+                <div className="mb-3 text-sm text-gray-500">
                   Seleccionadas: {totalSelectedCount} / {selectedTariff.sessions || 1}
                 </div>
 
@@ -347,32 +347,32 @@ export default function AppointmentTypeDetail() {
                     return (
                       <li
                         key={`${slot.slot_id}-${slot.start_at}`}
-                        className={`flex items-center justify-between p-3 rounded-lg border transition ${
+                        className={`flex items-center justify-between rounded-2xl border px-4 py-3 transition ${
                           slot.is_booked
-                            ? 'bg-red-50 border-red-200 opacity-60 cursor-not-allowed'
+                            ? 'cursor-not-allowed border-red-100 bg-red-50/70 text-red-500'
                             : isSelected
-                            ? 'bg-emerald-100 border-emerald-300 ring-2 ring-emerald-200'
-                            : 'bg-gradient-to-r from-white to-sky-50 border-sky-100 hover:bg-sky-100 cursor-pointer'
+                            ? 'border-emerald-200 bg-emerald-50 shadow-inner shadow-emerald-100'
+                            : 'cursor-pointer border-gray-100 bg-white/70 hover:border-emerald-100'
                         }`}
                         onClick={() => handleSelectSlot(slot)}
                       >
                         <div>
-                          <div className="font-medium text-slate-800">
+                          <div className="font-semibold text-gray-900">
                             {formatTimeRange(slot)}
                           </div>
                           {slot.is_booked ? (
-                            <div className="text-xs text-red-500 font-medium">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-red-500">
                               Ocupado
                             </div>
                           ) : (
                             isSelected && (
-                              <div className="text-xs text-emerald-600 font-medium">
+                              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
                                 Seleccionado
                               </div>
                             )
                           )}
                         </div>
-                        <div className="text-sm text-slate-600">
+                        <div className="text-sm font-semibold text-gray-500">
                           {slot.is_booked ? '—' : isSelected ? '✓' : '+'}
                         </div>
                       </li>
@@ -385,7 +385,7 @@ export default function AppointmentTypeDetail() {
                     <button
                       onClick={handleConfirmReservations}
                       disabled={confirming}
-                      className="px-5 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow transition disabled:bg-gray-300"
+                      className="rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 px-6 py-2 font-semibold text-white shadow-lg shadow-emerald-200 transition disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {confirming
                         ? 'Confirmando...'
@@ -398,7 +398,7 @@ export default function AppointmentTypeDetail() {
               </>
             ) : (
               date && (
-                <p className="text-sm text-slate-500 mt-4">
+                <p className="mt-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-4 text-sm text-gray-500">
                   No hay horarios disponibles.
                 </p>
               )
@@ -407,9 +407,7 @@ export default function AppointmentTypeDetail() {
         </div>
       )}
 
-      <footer className="mt-6 text-center text-xs text-slate-400">
-        <div>© 2025 Natursur</div>
-      </footer>
+      <footer className="pt-2 text-center text-xs text-gray-400">© 2025 Natursur</footer>
     </div>
   )
 }

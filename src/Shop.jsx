@@ -72,7 +72,7 @@ export default function Shop() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex h-64 items-center justify-center rounded-3xl border border-white/70 bg-white/80">
         <LoadingSpinner size={6} className="text-primary-600" />
       </div>
     )
@@ -80,16 +80,17 @@ export default function Shop() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Tienda</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Explora nuestros productos de salud y bienestar
+          <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">Catálogo</p>
+          <h1 className="text-3xl font-semibold text-gray-900">Tienda Natursur</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Productos de salud y bienestar curados por terapeutas.
           </p>
         </div>
         <button
           onClick={() => setShowCart(!showCart)}
-          className="btn-primary relative"
+          className="btn-primary relative shadow-xl shadow-emerald-200"
         >
           Carrito ({cartItems.length})
         </button>
@@ -121,7 +122,7 @@ export default function Shop() {
           ordering={ordering}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <p className="text-gray-500">No hay productos disponibles en el catálogo.</p>
@@ -130,26 +131,26 @@ export default function Shop() {
             products.map(product => (
               <div
                 key={product.id}
-                className="border border-primary-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white"
+                className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/70 bg-white/90 shadow-lg shadow-emerald-50 transition hover:-translate-y-1"
               >
                 {product.image_url && (
                   <img
                     src={product.image_url}
                     alt={product.name}
-                    className="w-full h-48 object-cover bg-gray-100"
+                    className="h-48 w-full object-cover"
                   />
                 )}
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="text-xl font-semibold text-gray-900">
                     {product.name}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <p className="mt-2 text-sm text-gray-500 line-clamp-3">
                     {product.description || 'Sin descripción disponible'}
                   </p>
                   
                   {/* CAMBIO: Eliminada la lógica visual de stock */}
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-2xl font-bold text-primary-600">
+                  <div className="mt-auto flex items-center justify-between pt-4">
+                    <span className="text-2xl font-semibold text-emerald-600">
                       {formatPrice(product.price_cents)}
                     </span>
                   </div>
@@ -157,7 +158,7 @@ export default function Shop() {
                   {/* CAMBIO: Botón siempre habilitado */}
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="w-full btn-primary"
+                    className="btn-primary mt-3 w-full justify-center"
                   >
                     Añadir al carrito
                   </button>
@@ -173,12 +174,12 @@ export default function Shop() {
 
 function CartView({ cartItems, removeFromCart, updateQuantity, getTotalPrice, formatPrice, onCheckout, ordering }) {
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">Mi Carrito</h2>
+    <div className="space-y-6 rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl shadow-emerald-100">
+      <h2 className="text-2xl font-semibold text-gray-900">Mi carrito</h2>
 
       {cartItems.length === 0 ? (
-        <div className="text-center py-12 border border-gray-200 rounded-lg bg-gray-50">
-          <p className="text-gray-500">Tu carrito está vacío</p>
+        <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 py-12 text-center text-gray-500">
+          Tu carrito está vacío
         </div>
       ) : (
         <>
@@ -186,36 +187,36 @@ function CartView({ cartItems, removeFromCart, updateQuantity, getTotalPrice, fo
             {cartItems.map(item => (
               <div
                 key={item.id}
-                className="border border-primary-200 rounded-lg p-4 flex justify-between items-center bg-white"
+                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/60 bg-white/90 p-4 shadow"
               >
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {formatPrice(item.price_cents)} × {item.quantity}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                  <p className="text-sm text-gray-500">
+                    {formatPrice(item.price_cents)} · {item.quantity} uds.
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100"
+                      className="text-lg leading-none text-gray-600"
                     >
-                      -
+                      −
                     </button>
-                    <span className="px-4 py-1">{item.quantity}</span>
+                    <span className="w-8 text-center font-semibold">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100"
+                      className="text-lg leading-none text-gray-600"
                     >
                       +
                     </button>
                   </div>
-                  <p className="font-semibold text-gray-900 min-w-24 text-right">
+                  <p className="min-w-[5rem] text-right text-lg font-semibold text-gray-900">
                     {formatPrice(item.price_cents * item.quantity)}
                   </p>
                   <button
                     onClick={() => removeFromCart(item.id)}
-                    className="text-red-600 hover:text-red-800 font-semibold text-sm"
+                    className="text-sm font-semibold text-red-500 hover:text-red-600"
                   >
                     Eliminar
                   </button>
@@ -224,19 +225,19 @@ function CartView({ cartItems, removeFromCart, updateQuantity, getTotalPrice, fo
             ))}
           </div>
 
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex justify-between items-center text-lg font-semibold">
-              <span className="text-gray-900">Total:</span>
-              <span className="text-primary-600">{formatPrice(getTotalPrice())}</span>
+          <div className="border-t border-gray-100 pt-4">
+            <div className="flex items-center justify-between text-lg font-semibold">
+              <span>Total</span>
+              <span className="text-emerald-600">{formatPrice(getTotalPrice())}</span>
             </div>
           </div>
 
-          <button 
+          <button
             onClick={onCheckout}
             disabled={ordering}
-            className="w-full btn-primary py-3 text-lg"
+            className="btn-primary w-full justify-center py-3 text-base font-semibold shadow-lg shadow-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {ordering ? 'Procesando...' : 'Confirmar Pedido'}
+            {ordering ? 'Procesando...' : 'Confirmar pedido'}
           </button>
         </>
       )}

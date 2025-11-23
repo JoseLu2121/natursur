@@ -74,7 +74,7 @@ export default function StaffDashboard({ session }) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex h-64 items-center justify-center rounded-3xl border border-white/70 bg-white/80">
         <LoadingSpinner size={6} className="text-primary-600" />
       </div>
     )
@@ -82,91 +82,63 @@ export default function StaffDashboard({ session }) {
 
   if (error) {
     return (
-      <div className="rounded-md bg-red-50 p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error al cargar las citas</h3>
-            <p className="mt-2 text-sm text-red-700">{error}</p>
-          </div>
-        </div>
+      <div className="rounded-2xl border border-red-100 bg-red-50/90 p-4 text-red-800">
+        <h3 className="font-semibold">Error al cargar las citas</h3>
+        <p className="text-sm">{error}</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Mis Citas</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Lista de todas tus citas programadas para las próximas 24 horas y futuras.
-          </p>
-        </div>
+    <div className="space-y-8 rounded-3xl border border-white/70 bg-white/80 p-6 shadow-xl shadow-emerald-100 backdrop-blur">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">Agenda</p>
+        <h1 className="text-2xl font-semibold text-gray-900">Citas asignadas</h1>
+        <p className="text-sm text-gray-500">
+          Próximos clientes en las próximas 24 horas y futuras.
+        </p>
       </div>
 
-      <div className="mt-8 flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                      Cliente
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Tipo
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Fecha y Hora
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Estado
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Teléfono
-                    </th>
+      <div className="overflow-hidden rounded-2xl border border-white/60 shadow-lg shadow-emerald-100">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 bg-white text-sm">
+            <thead className="bg-emerald-50/60 text-gray-700">
+              <tr>
+                <th className="px-4 py-3 text-left font-semibold">Cliente</th>
+                <th className="px-4 py-3 text-left font-semibold">Tipo</th>
+                <th className="px-4 py-3 text-left font-semibold">Fecha y hora</th>
+                <th className="px-4 py-3 text-left font-semibold">Estado</th>
+                <th className="px-4 py-3 text-left font-semibold">Teléfono</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {appointments.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
+                    No hay citas programadas.
+                  </td>
+                </tr>
+              ) : (
+                appointments.map((appointment) => (
+                  <tr key={appointment.id} className="hover:bg-emerald-50/40">
+                    <td className="px-4 py-4 font-semibold text-gray-900">
+                      {appointment.users?.full_name || 'Cliente sin nombre'}
+                    </td>
+                    <td className="px-4 py-4 text-gray-600">{appointment.appointment_types?.name}</td>
+                    <td className="px-4 py-4 text-gray-600">{formatDate(appointment.start_at)}</td>
+                    <td className="px-4 py-4 text-gray-600">
+                      <span className={getStatusBadgeClass(appointment.status)}>
+                        {appointment.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-gray-600">
+                      {appointment.users?.phone || 'No disponible'}
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {appointments.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="py-8 text-center text-sm text-gray-500">
-                        No hay citas programadas
-                      </td>
-                    </tr>
-                  ) : (
-                    appointments.map((appointment) => (
-                      <tr key={appointment.id}>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                          {appointment.users?.full_name || 'Cliente sin nombre'}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {appointment.appointment_types?.name}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {formatDate(appointment.start_at)}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          <span className={getStatusBadgeClass(appointment.status)}>
-                            {appointment.status}
-                          </span>
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {appointment.users?.phone || 'No disponible'}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

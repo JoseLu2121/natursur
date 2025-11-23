@@ -71,27 +71,37 @@ function AppContent() {
   }
 
   return (
-    // AÑADIDO: w-full para asegurar que ocupe todo el ancho
-    <div className="min-h-screen bg-primary-50 w-full">
-      <NavBar />
+    <div className="relative min-h-screen w-full bg-gradient-to-br from-emerald-50 via-white to-green-100">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-emerald-200 opacity-40 blur-3xl" />
+        <div className="absolute right-0 top-40 h-80 w-80 rounded-full bg-lime-200 opacity-40 blur-[120px]" />
+        <div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-100 opacity-50 blur-2xl" />
+      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-primary-100 overflow-hidden p-6">
-          <Routes>
-            {/* ... tus rutas ... */}
-            <Route path="/" element={<Home />} />
-            <Route path="/citas" element={<PrivateRoute><DashboardWrapper onLogout={handleLogout} /></PrivateRoute>} />
-            <Route path="/appointment-type/:typeId" element={<PrivateRoute><AppointmentTypeDetail /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
-            <Route path="/appointments/edit/:appointmentId" element={<PrivateRoute><EditAppointmentPage /></PrivateRoute>} />
-            <Route path="/store" element={<PrivateRoute><Shop /></PrivateRoute>} />
-            <Route path="/stock" element={<AdminRoute><Stock /></AdminRoute>} />
-            <Route path="/orders" element={<AdminRoute><OrderPage /></AdminRoute>} />
-            <Route path="/my-appointments" element={<PrivateRoute><MyAppointments session={{ user }} /></PrivateRoute>} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <NavBar />
+
+        <main className="flex-1 px-4 pb-12 pt-6">
+          <div className="mx-auto w-full max-w-6xl rounded-[32px] border border-white/70 bg-white/80 p-6 shadow-2xl shadow-emerald-100 backdrop-blur">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/citas" element={<PrivateRoute><DashboardWrapper onLogout={handleLogout} /></PrivateRoute>} />
+              <Route path="/appointment-type/:typeId" element={<PrivateRoute><AppointmentTypeDetail /></PrivateRoute>} />
+              <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+              <Route path="/appointments/edit/:appointmentId" element={<PrivateRoute><EditAppointmentPage /></PrivateRoute>} />
+              <Route path="/store" element={<PrivateRoute><Shop /></PrivateRoute>} />
+              <Route path="/stock" element={<AdminRoute><Stock /></AdminRoute>} />
+              <Route path="/orders" element={<AdminRoute><OrderPage /></AdminRoute>} />
+              <Route path="/my-appointments" element={<PrivateRoute><MyAppointments session={{ user }} /></PrivateRoute>} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </main>
+
+        <footer className="pb-6 text-center text-sm text-emerald-700">
+          © {new Date().getFullYear()} Natursur · Bienestar natural
+        </footer>
       </div>
     </div>
   )

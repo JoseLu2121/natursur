@@ -28,18 +28,25 @@ export default function OrdersPage() {
   const formatPrice = (cents) => (cents / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
   const formatDate = (dateStr) => new Date(dateStr).toLocaleString('es-ES')
 
-  if (loading) return <div className="flex justify-center items-center h-64"><LoadingSpinner size={6} className="text-primary-600" /></div>
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center rounded-3xl border border-white/70 bg-white/80">
+        <LoadingSpinner size={6} className="text-primary-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl shadow-emerald-100">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Gestión de Pedidos</h1>
-          <p className="mt-1 text-sm text-gray-600">Visualiza y registra nuevos pedidos.</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">Pedidos</p>
+          <h1 className="text-3xl font-semibold text-gray-900">Gestión de pedidos</h1>
+          <p className="text-sm text-gray-500">Visualiza y registra nuevos pedidos.</p>
         </div>
         <button
           onClick={() => setShowManualForm(true)}
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center gap-2 shadow-lg shadow-emerald-200"
         >
           + Nuevo Pedido Manual
         </button>
@@ -55,17 +62,17 @@ export default function OrdersPage() {
         />
       )}
 
-      <div className="overflow-hidden bg-white shadow sm:rounded-lg border border-gray-200">
-        <ul role="list" className="divide-y divide-gray-200">
+      <div className="overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-xl shadow-emerald-100">
+        <ul role="list" className="divide-y divide-gray-100">
           {orders.length === 0 ? (
             <li className="px-6 py-12 text-center text-gray-500">No hay pedidos registrados.</li>
           ) : (
             orders.map((order) => (
-              <li key={order.id} className="px-4 py-5 sm:px-6 hover:bg-gray-50 transition">
-                <div className="flex justify-between items-start mb-4">
+              <li key={order.id} className="px-4 py-5 sm:px-6 transition hover:bg-emerald-50/40">
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3">
-                      <h3 className="text-lg font-medium text-primary-700">
+                      <h3 className="text-lg font-semibold text-gray-900">
                         Pedido #{order.id.slice(0, 8)}
                       </h3>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -74,7 +81,7 @@ export default function OrdersPage() {
                         {order.status === 'pending' ? 'Pendiente' : order.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="mt-1 text-sm text-gray-500">
                       Cliente: <span className="font-semibold text-gray-900">{order.users?.full_name || 'Desconocido'}</span> 
                       <span className="mx-2">•</span> 
                       {formatDate(order.created_at)}
@@ -82,19 +89,19 @@ export default function OrdersPage() {
                     {order.users?.email && <p className="text-xs text-gray-400">{order.users.email}</p>}
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-bold text-gray-900">{formatPrice(order.total_cents)}</p>
+                    <p className="text-2xl font-semibold text-emerald-600">{formatPrice(order.total_cents)}</p>
                   </div>
                 </div>
 
                 {/* Lista de productos del pedido */}
-                <div className="bg-gray-50 rounded-md p-3">
-                  <ul className="space-y-2">
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-3">
+                  <ul className="space-y-2 text-sm text-gray-600">
                     {order.order_items.map((item, idx) => (
-                      <li key={idx} className="flex justify-between text-sm">
-                        <span className="text-gray-700">
-                          <span className="font-bold">{item.quantity}x</span> {item.products?.name || 'Producto eliminado'}
+                      <li key={idx} className="flex justify-between">
+                        <span>
+                          <span className="font-semibold text-gray-900">{item.quantity}x</span> {item.products?.name || 'Producto eliminado'}
                         </span>
-                        <span className="text-gray-500">
+                        <span>
                           {formatPrice(item.unit_price_cents * item.quantity)}
                         </span>
                       </li>

@@ -66,7 +66,7 @@ export default function Stock() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex h-64 items-center justify-center rounded-3xl border border-white/70 bg-white/80">
         <LoadingSpinner size={8} className="text-primary-600" />
       </div>
     )
@@ -75,16 +75,17 @@ export default function Stock() {
   return (
     <div className="space-y-8">
       {/* Encabezado */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl shadow-emerald-100">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Control de Stock</h1>
-          <p className="mt-2 text-sm text-gray-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">Inventario</p>
+          <h1 className="text-3xl font-semibold text-gray-900">Control de Stock</h1>
+          <p className="text-sm text-gray-500">
             Gestión de productos físicos disponibles en el almacén.
           </p>
         </div>
         <button
           onClick={() => setShowManualForm(true)}
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center gap-2 shadow-lg shadow-emerald-200"
         >
           + Añadir Stock Manual
         </button>
@@ -115,50 +116,50 @@ export default function Stock() {
       )}
 
       {/* Tabla de Inventario */}
-      <div className="overflow-hidden bg-white shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-        <table className="min-w-full divide-y divide-gray-300">
-          <thead className="bg-gray-50">
+      <div className="overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-xl shadow-emerald-100">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-emerald-50/70">
             <tr>
-              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-700 sm:pl-6">
                 Producto
               </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-700">
                 Stock Actual
               </th>
-              <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
+              <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-700">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
+          <tbody className="divide-y divide-gray-100 bg-white/95">
             {inventory.length === 0 ? (
               <tr>
                 <td colSpan="3" className="px-6 py-12 text-center text-sm text-gray-500">
-                  <p className="font-medium text-gray-900 mb-1">Inventario vacío</p>
+                  <p className="mb-1 text-base font-semibold text-gray-900">Inventario vacío</p>
                   <p>Usa el botón "+ Añadir Stock Manual" para registrar productos.</p>
                 </td>
               </tr>
             ) : (
               inventory.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
+                <tr key={item.id} className="hover:bg-emerald-50/40">
                   <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-3">
                       {item.products?.image_url ? (
                         <img 
-                          className="h-10 w-10 flex-shrink-0 rounded-full object-cover bg-gray-100" 
+                          className="h-12 w-12 flex-shrink-0 rounded-2xl border border-gray-100 object-cover" 
                           src={item.products.image_url} 
                           alt="" 
                         />
                       ) : (
-                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
+                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-gray-200 text-[11px] text-gray-400">
                           Sin foto
                         </div>
                       )}
-                      <div className="ml-4">
-                        <div className="font-medium text-gray-900">
+                      <div>
+                        <div className="font-semibold text-gray-900">
                           {item.products?.name || <span className="text-red-500 italic">Producto eliminado</span>}
                         </div>
-                        <div className="text-gray-500 text-xs">ID Inv: {item.id}</div>
+                        <div className="text-xs text-gray-500">ID Inv: {item.id}</div>
                       </div>
                     </div>
                   </td>
@@ -171,19 +172,19 @@ export default function Stock() {
                           min="0"
                           value={tempQuantity}
                           onChange={(e) => setTempQuantity(e.target.value)}
-                          className="w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-1"
+                          className="w-24 rounded-2xl border border-gray-200 px-3 py-1 text-sm text-gray-700 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                           autoFocus
                         />
                         <button 
                           onClick={() => handleUpdateStock(item.id, tempQuantity)} 
-                          className="text-green-600 hover:text-green-800 font-bold p-1"
+                          className="text-emerald-600 transition hover:text-emerald-700"
                           title="Guardar"
                         >
                           ✓
                         </button>
                         <button 
                           onClick={() => setEditingId(null)} 
-                          className="text-red-600 hover:text-red-800 font-bold p-1"
+                          className="text-red-500 transition hover:text-red-600"
                           title="Cancelar"
                         >
                           ✕
@@ -210,13 +211,13 @@ export default function Stock() {
                             setEditingId(item.id)
                             setTempQuantity(item.quantity)
                           }}
-                          className="text-primary-600 hover:text-primary-900 mr-4"
+                          className="rounded-full border border-emerald-200 px-3 py-1 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-50"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="ml-3 rounded-full border border-red-200 px-3 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-50"
                         >
                           Quitar
                         </button>
