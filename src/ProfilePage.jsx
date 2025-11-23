@@ -1,9 +1,8 @@
 // src/pages/ProfilePage.jsx
 import { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { getUserById, updateUser } from './api/user'
-//import { getAppointmentsByUser, cancelAppointment, updateAppointment } from './api/appointments'
 import ProfileButton from './ProfileButton.jsx'
-//import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 
 export default function ProfilePage() {
@@ -95,54 +94,81 @@ export default function ProfilePage() {
   }
   */
   return (
-    <div className="relative p-6 max-w-lg mx-auto">
+    <div className="space-y-8">
+      <section className="rounded-[32px] border border-white/70 bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-8 shadow-2xl shadow-emerald-100">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-emerald-700">
+              Perfil
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold text-gray-900">Hola, {userData.full_name || 'Natursur'}</h2>
+            <p className="text-sm text-gray-500">{userEmail}</p>
+            <div className="mt-4 inline-flex rounded-full border border-emerald-200 bg-white/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">
+              {userData.role || 'CLIENTE'}
+            </div>
+          </div>
 
-      <h2 className="text-2xl font-semibold mb-2">Mi Perfil</h2>
-      <p className="text-gray-600 mb-4">{userEmail}</p>
+          <div className="rounded-3xl border border-white/60 bg-white/80 p-5 shadow-lg shadow-emerald-100">
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-gray-400">Estado</p>
+            <p className="mt-2 text-lg font-semibold text-gray-900">Cuenta activa</p>
+            <p className="text-sm text-gray-500">Tus datos están protegidos.</p>
+          </div>
+        </div>
+      </section>
 
-      <form onSubmit={handleSave} className="space-y-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium">Nombre completo</label>
-          <input
-            type="text"
-            name="full_name"
-            value={userData.full_name}
-            onChange={handleChange}
-            className="w-full border rounded p-2 focus:outline-none focus:ring focus:ring-blue-200"
-          />
+      <section className="rounded-[32px] border border-white/80 bg-white/85 p-6 shadow-xl shadow-emerald-100 backdrop-blur">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Información personal</h3>
+          <p className="text-sm text-gray-500">Actualiza tu nombre y teléfono para que podamos contactarte fácilmente.</p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium">Teléfono</label>
-          <input
-            type="text"
-            name="phone"
-            value={userData.phone}
-            onChange={handleChange}
-            className="w-full border rounded p-2 focus:outline-none focus:ring focus:ring-blue-200"
-          />
-        </div>
+        <form onSubmit={handleSave} className="space-y-5">
+          <div>
+            <label className="text-sm font-semibold text-gray-700">Nombre completo</label>
+            <input
+              type="text"
+              name="full_name"
+              value={userData.full_name}
+              onChange={handleChange}
+              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 text-gray-900 shadow-inner shadow-gray-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium">Rol</label>
-          <input
-            type="text"
-            value={userData.role}
-            disabled
-            className="w-full border rounded p-2 bg-gray-100 text-gray-500"
-          />
-        </div>
+          <div>
+            <label className="text-sm font-semibold text-gray-700">Teléfono</label>
+            <input
+              type="text"
+              name="phone"
+              value={userData.phone}
+              onChange={handleChange}
+              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 text-gray-900 shadow-inner shadow-gray-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-        >
-          {loading ? 'Guardando...' : 'Guardar cambios'}
-        </button>
+          <div>
+            <label className="text-sm font-semibold text-gray-700">Rol asignado</label>
+            <input
+              type="text"
+              value={userData.role}
+              disabled
+              className="mt-2 w-full rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600"
+            />
+          </div>
 
-        {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}
-      </form>
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? 'Guardando…' : 'Guardar cambios'}
+            </button>
+            {message && (
+              <span className="text-sm font-semibold text-emerald-600">{message}</span>
+            )}
+          </div>
+        </form>
+      </section>
       {/*
       <hr className="my-6" />
 

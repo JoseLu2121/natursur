@@ -46,9 +46,15 @@ export default function OrdersPage() {
         </div>
         <button
           onClick={() => setShowManualForm(true)}
-          className="btn-primary flex items-center gap-2 shadow-lg shadow-emerald-200"
+          className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full border border-emerald-100 bg-white/80 px-5 py-2.5 text-sm font-semibold text-emerald-900 shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5"
         >
-          + Nuevo Pedido Manual
+          <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-lime-400 opacity-95 transition group-hover:opacity-100" aria-hidden="true" />
+          <span className="relative inline-flex items-center gap-2 text-white">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m-7-7h14" />
+            </svg>
+            Nuevo pedido manual
+          </span>
         </button>
       </div>
 

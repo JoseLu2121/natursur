@@ -96,19 +96,21 @@ export default function MyAppointments({ session }) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => navigate(`/appointment-type/${appt.appointment_type_id}`)}
-                    className="px-3 py-1.5 rounded-md bg-sky-50 text-sky-700 hover:bg-sky-100 transition text-sm font-medium"
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5"
                   >
-                    Reprogramar
+                    <span>Reprogramar</span>
+                    <span aria-hidden="true">↻</span>
                   </button>
 
                   <button
                     onClick={() => handleCancel(appt.id)}
                     disabled={canceling === appt.id}
-                    className={`px-3 py-1.5 rounded-md border border-red-100 text-red-600 bg-red-50 hover:bg-red-100 transition text-sm font-medium ${
-                      canceling === appt.id ? 'opacity-50 cursor-not-allowed' : ''
+                    className={`inline-flex items-center gap-2 rounded-full border border-red-200 bg-white/80 px-4 py-2 text-sm font-semibold text-red-600 shadow-sm transition hover:bg-red-50 ${
+                      canceling === appt.id ? 'opacity-60 cursor-not-allowed' : ''
                     }`}
                   >
-                    {canceling === appt.id ? 'Cancelando…' : 'Cancelar'}
+                    <span>{canceling === appt.id ? 'Cancelando…' : 'Cancelar'}</span>
+                    <span aria-hidden="true">✕</span>
                   </button>
                 </div>
               </div>

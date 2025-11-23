@@ -124,8 +124,17 @@ export default function NavBar() {
           {user ? (
             <Avatar user={user} onLogout={handleLogout} />
           ) : (
-            <button onClick={() => navigate('/login')} className="btn-primary">
-              Iniciar sesión
+            <button
+              onClick={() => navigate('/login')}
+              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-emerald-100 bg-white/80 px-5 py-2 text-sm font-semibold text-emerald-900 shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5 hover:shadow-emerald-300"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-lime-400 opacity-90 transition group-hover:scale-105" aria-hidden="true" />
+              <span className="relative inline-flex items-center gap-2 text-white">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m0 0-4-4m4 4-4 4" />
+                </svg>
+                Iniciar sesión
+              </span>
             </button>
           )}
         </div>
@@ -149,13 +158,19 @@ export default function NavBar() {
             ))}
             {!user && (
               <button
-                className="btn-secondary w-full"
+                className="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full border border-emerald-100 bg-white/90 px-5 py-3 text-sm font-semibold text-emerald-900 shadow-lg shadow-emerald-100 transition hover:-translate-y-0.5"
                 onClick={() => {
                   navigate('/login')
                   setMobileMenuOpen(false)
                 }}
               >
-                Iniciar sesión
+                <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-lime-400 opacity-95" aria-hidden="true" />
+                <span className="relative inline-flex items-center gap-2 text-white">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m0 0-4-4m4 4-4 4" />
+                  </svg>
+                  Iniciar sesión
+                </span>
               </button>
             )}
           </div>

@@ -6,13 +6,16 @@ export default function StaffDashboard({ session }) {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const staffId = session?.user?.id || session?.id
 
   useEffect(() => {
+    if (!staffId) return
     fetchStaffAppointments()
-  }, [session])
+  }, [staffId])
 
   const fetchStaffAppointments = async () => {
     try {
+      if (!staffId) return
       setLoading(true)
       setError(null)
 
@@ -24,7 +27,7 @@ export default function StaffDashboard({ session }) {
           appointment_types(name, description),
           users:user_id(full_name, phone)
         `)
-        .eq('staff_id', session.user.id)
+        .eq('staff_id', staffId)
         .order('start_at', { ascending: true })
 
       if (appointmentsError) throw appointmentsError

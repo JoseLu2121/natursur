@@ -71,7 +71,7 @@ function AppContent() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-gradient-to-br from-emerald-50 via-white to-green-100">
+    <div className="relative min-h-screen w-screen overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-green-100">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-emerald-200 opacity-40 blur-3xl" />
         <div className="absolute right-0 top-40 h-80 w-80 rounded-full bg-lime-200 opacity-40 blur-[120px]" />

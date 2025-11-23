@@ -143,15 +143,17 @@ export default function Dashboard({ session, onLogout }) {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => navigate(`/appointments/edit/${appt.id}`)}
-                        className="rounded-full border border-amber-200 px-4 py-1.5 text-sm font-semibold text-amber-600 transition hover:bg-amber-50"
+                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5"
                       >
-                        Editar
+                        <span>Editar</span>
+                        <span aria-hidden="true">✎</span>
                       </button>
                       <button
                         onClick={() => handleCancel(appt.id)}
-                        className="rounded-full border border-red-200 px-4 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                        className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white/80 px-4 py-1.5 text-sm font-semibold text-red-600 shadow-sm transition hover:bg-red-50"
                       >
-                        Cancelar
+                        <span>Cancelar</span>
+                        <span aria-hidden="true">✕</span>
                       </button>
                     </div>
                   )}

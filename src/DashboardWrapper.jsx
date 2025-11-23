@@ -38,8 +38,11 @@ export default function DashboardWrapper({ onLogout }) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <LoadingSpinner size={6} className="text-primary-600" />
+      <div className="flex min-h-[320px] items-center justify-center">
+        <div className="flex items-center gap-3 rounded-3xl border border-white/70 bg-white/90 px-6 py-4 shadow-xl shadow-emerald-100">
+          <LoadingSpinner size={4} className="text-emerald-500" />
+          <p className="text-sm font-semibold text-emerald-700">Cargando tu panel…</p>
+        </div>
       </div>
     )
   }

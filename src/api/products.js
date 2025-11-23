@@ -128,7 +128,6 @@ export const createProduct = async (productData) => {
         name: productData.name,
         description: productData.description,
         price_cents: parseInt(productData.price_cents),
-        stock: parseInt(productData.stock || 0),
         image_url: productData.image_url,
       })
       .select()
@@ -151,7 +150,6 @@ export const updateProduct = async (productId, productData) => {
         name: productData.name,
         description: productData.description,
         price_cents: parseInt(productData.price_cents),
-        stock: parseInt(productData.stock),
         image_url: productData.image_url,
       })
       .eq('id', productId)
@@ -162,24 +160,6 @@ export const updateProduct = async (productId, productData) => {
     return data
   } catch (error) {
     console.error('Error updating product:', error)
-    throw error
-  }
-}
-
-// Update product stock
-export const updateProductStock = async (productId, stock) => {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .update({ stock: parseInt(stock) })
-      .eq('id', productId)
-      .select()
-      .single()
-
-    if (error) throw error
-    return data
-  } catch (error) {
-    console.error('Error updating product stock:', error)
     throw error
   }
 }
