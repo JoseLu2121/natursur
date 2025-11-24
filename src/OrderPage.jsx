@@ -1,6 +1,6 @@
 // src/OrdersPage.jsx
 import { useState, useEffect } from 'react'
-import { getAllOrders } from './api/products'
+import { getAllOrders, updateOrderStatus, deleteOrder } from './api/products'
 import LoadingSpinner from './components/LoadingSpinner'
 import ManualOrderForm from './components/ManualOrderForm'
 
@@ -8,6 +8,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [showManualForm, setShowManualForm] = useState(false)
+  const [updatingOrderId, setUpdatingOrderId] = useState(null)
+  const [deletingOrderId, setDeletingOrderId] = useState(null)
 
   useEffect(() => {
     fetchOrders()
@@ -22,6 +24,35 @@ export default function OrdersPage() {
       console.error('Error:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleCompleteOrder = async (orderId) => {
+    try {
+      setUpdatingOrderId(orderId)
+      await updateOrderStatus(orderId, 'completed')
+      setOrders(prev => prev.map(order => 
+        order.id === orderId ? { ...order, status: 'completed' } : order
+      ))
+    } catch (error) {
+      alert('Error al actualizar pedido: ' + error.message)
+    } finally {
+      setUpdatingOrderId(null)
+    }
+  }
+
+  const handleDeleteOrder = async (orderId) => {
+    const confirmed = window.confirm('¿Eliminar este pedido? Esta acción no se puede deshacer.')
+    if (!confirmed) return
+
+    try {
+      setDeletingOrderId(orderId)
+      await deleteOrder(orderId)
+      setOrders(prev => prev.filter(order => order.id !== orderId))
+    } catch (error) {
+      alert('Error al eliminar pedido: ' + error.message)
+    } finally {
+      setDeletingOrderId(null)
     }
   }
 
@@ -82,10 +113,32 @@ export default function OrdersPage() {
                         Pedido #{order.id.slice(0, 8)}
                       </h3>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                        order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
                       }`}>
-                        {order.status === 'pending' ? 'Pendiente' : order.status}
+                        {order.status === 'pending' ? 'Pendiente' : 
+                         order.status === 'completed' ? 'Completado' : order.status}
                       </span>
+                      {order.status === 'pending' && (
+                        <button
+                          onClick={() => handleCompleteOrder(order.id)}
+                          disabled={updatingOrderId === order.id}
+                          className="inline-flex items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 transition hover:-translate-y-0.5 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          title="Marcar como completado"
+                        >
+                          {updatingOrderId === order.id ? (
+                            'Actualizando…'
+                          ) : (
+                            <>
+                              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                              Completar
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                     <p className="mt-1 text-sm text-gray-500">
                       Cliente: <span className="font-semibold text-gray-900">{order.users?.full_name || 'Desconocido'}</span> 
@@ -94,8 +147,30 @@ export default function OrdersPage() {
                     </p>
                     {order.users?.email && <p className="text-xs text-gray-400">{order.users.email}</p>}
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-semibold text-emerald-600">{formatPrice(order.total_cents)}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="text-2xl font-semibold text-emerald-600">{formatPrice(order.total_cents)}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteOrder(order.id)}
+                      disabled={deletingOrderId === order.id}
+                      className="inline-flex items-center gap-1 rounded-full border border-red-100 px-3 py-1 text-xs font-semibold text-red-500 transition hover:-translate-y-0.5 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {deletingOrderId === order.id ? 'Eliminando…' : 'Eliminar'}
+                      <svg
+                        className="h-3.5 w-3.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 7h12M9 7v10m6-10v10M10 7l1-3h2l1 3"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 

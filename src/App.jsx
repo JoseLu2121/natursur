@@ -15,6 +15,7 @@ import Shop from './Shop'
 import Stock from './Stock'
 import LoginPage from './LoginPage'
 import OrderPage from './OrderPage'
+import Clients from './Clients'
 
 
 // 1. PrivateRoute actualizado: Usa 'loading' del contexto para evitar parpadeos
@@ -92,6 +93,7 @@ function AppContent() {
               <Route path="/store" element={<PrivateRoute><Shop /></PrivateRoute>} />
               <Route path="/stock" element={<AdminRoute><Stock /></AdminRoute>} />
               <Route path="/orders" element={<AdminRoute><OrderPage /></AdminRoute>} />
+              <Route path="/clients" element={<AdminRoute><Clients /></AdminRoute>} />
               <Route path="/my-appointments" element={<PrivateRoute><MyAppointments session={{ user }} /></PrivateRoute>} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

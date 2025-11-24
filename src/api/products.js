@@ -256,6 +256,39 @@ export const getAllOrders = async () => {
   }
 }
 
+// Update order status
+export const updateOrderStatus = async (orderId, status) => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ status })
+      .eq('id', orderId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error updating order status:', error)
+    throw error
+  }
+}
+
+// Delete order
+export const deleteOrder = async (orderId) => {
+  try {
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', orderId)
+
+    if (error) throw error
+  } catch (error) {
+    console.error('Error deleting order:', error)
+    throw error
+  }
+}
+
 export const getInventory = async () => {
   try {
     const { data, error } = await supabase

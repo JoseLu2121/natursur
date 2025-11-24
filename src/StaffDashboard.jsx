@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './api/supabaseClient'
+import { useAuth } from './context/AuthContext'
 import LoadingSpinner from './components/LoadingSpinner'
+import ManualAppointmentForm from './components/ManualAppointmentForm'
 
 export default function StaffDashboard({ session }) {
+  const { role } = useAuth()
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showManualForm, setShowManualForm] = useState(false)
   const staffId = session?.user?.id || session?.id
+  const isAdminOrStaff = role === 'admin' || role === 'staff'
 
   useEffect(() => {
     if (!staffId) return
@@ -93,14 +98,44 @@ export default function StaffDashboard({ session }) {
   }
 
   return (
-    <div className="space-y-8 rounded-3xl border border-white/70 bg-white/80 p-6 shadow-xl shadow-emerald-100 backdrop-blur">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">Agenda</p>
-        <h1 className="text-2xl font-semibold text-gray-900">Citas asignadas</h1>
-        <p className="text-sm text-gray-500">
-          Próximos clientes en las próximas 24 horas y futuras.
-        </p>
+    <div className="space-y-8">
+      <div className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-xl shadow-emerald-100 backdrop-blur">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">Agenda</p>
+            <h1 className="text-2xl font-semibold text-gray-900">Citas asignadas</h1>
+            <p className="text-sm text-gray-500">
+              Próximos clientes en las próximas 24 horas y futuras.
+            </p>
+          </div>
+          {isAdminOrStaff && (
+            <button
+              onClick={() => setShowManualForm(true)}
+              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-emerald-100 bg-white/80 px-5 py-2.5 text-sm font-semibold text-emerald-900 shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-lime-400 opacity-95" aria-hidden="true" />
+              <span className="relative inline-flex items-center gap-2 text-white">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m-7-7h14" />
+                </svg>
+                Nueva cita manual
+              </span>
+            </button>
+          )}
+        </div>
       </div>
+
+      {showManualForm && (
+        <ManualAppointmentForm
+          onAppointmentCreated={() => {
+            setShowManualForm(false)
+            fetchStaffAppointments()
+          }}
+          onCancel={() => setShowManualForm(false)}
+        />
+      )}
+
+      <div className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-xl shadow-emerald-100 backdrop-blur">
 
       <div className="overflow-hidden rounded-2xl border border-white/60 shadow-lg shadow-emerald-100">
         <div className="overflow-x-auto">
@@ -143,6 +178,7 @@ export default function StaffDashboard({ session }) {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   )

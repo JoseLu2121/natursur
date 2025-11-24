@@ -119,42 +119,55 @@ export default function EditAppointmentPage() {
 
   if (loading || !appointmentType)
     return (
-      <div className="min-h-[240px] flex items-center justify-center">
-        <div className="animate-pulse text-emerald-600">Cargando...</div>
+      <div className="flex min-h-[320px] items-center justify-center">
+        <div className="flex items-center gap-3 rounded-3xl border border-white/70 bg-white/90 px-6 py-4 shadow-xl shadow-emerald-100">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent"></div>
+          <p className="text-sm font-semibold text-emerald-700">Cargando…</p>
+        </div>
       </div>
     )
 
   return (
-    <div className="max-w-3xl mx-auto p-6 md:p-10">
-      <button
-        onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-200 bg-gray-100 hover:bg-gray-200 shadow-sm text-slate-700 mb-6"
-      >
-        ← Volver
-      </button>
+    <div className="space-y-6">
+      <div className="rounded-[32px] border border-white/70 bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-8 shadow-2xl shadow-emerald-100">
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/80 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver
+        </button>
 
-      <h1 className="text-2xl font-semibold text-sky-900 mb-4">
-        Editar cita: {appointmentType.name}
-      </h1>
+        <div className="space-y-2">
+          <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-emerald-700">
+            Editar cita
+          </p>
+          <h1 className="text-3xl font-semibold text-gray-900">{appointmentType.name}</h1>
+          <p className="text-sm text-gray-500">Modifica los detalles de tu reserva.</p>
+        </div>
+      </div>
 
       {/* Staff */}
-      <div className="mb-6">
-        <h2 className="text-lg font-medium text-emerald-700 mb-2">Selecciona un masajista</h2>
-        <div className="space-y-2">
+      <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-xl shadow-emerald-50">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Selecciona un profesional</h2>
+        <div className="space-y-3">
           {staffMembers.map((s) => (
             <label
               key={s.id}
-              className={`flex justify-between p-3 rounded-lg border cursor-pointer ${
+              className={`flex cursor-pointer items-center justify-between rounded-2xl border p-4 transition hover:-translate-y-0.5 ${
                 selectedStaff?.id === s.id
-                  ? 'bg-emerald-50 ring-2 ring-emerald-200'
-                  : 'hover:bg-emerald-50'
+                  ? 'border-emerald-200 bg-emerald-50/80 shadow-md shadow-emerald-100'
+                  : 'border-gray-200 bg-white hover:border-emerald-100 hover:bg-emerald-50/30'
               }`}
             >
-              <span>{s.full_name}</span>
+              <span className="font-semibold text-gray-900">{s.full_name}</span>
               <input
                 type="radio"
                 checked={selectedStaff?.id === s.id}
                 onChange={() => setSelectedStaff(s)}
+                className="h-5 w-5 text-emerald-600 focus:ring-2 focus:ring-emerald-200"
               />
             </label>
           ))}
@@ -163,16 +176,16 @@ export default function EditAppointmentPage() {
 
       {/* Tarifa bloqueada */}
       {selectedTariff && (
-        <div className="mb-6">
-          <h2 className="text-lg font-medium text-sky-700 mb-2">Tarifa actual</h2>
-          <div className="p-3 rounded-lg border bg-sky-50 flex justify-between">
+        <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-xl shadow-emerald-50">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Tarifa actual</h2>
+          <div className="flex items-center justify-between rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
             <div>
-              <div className="font-medium text-slate-800">{selectedTariff.name}</div>
-              <div className="text-xs text-slate-500">
-                {selectedTariff.duration_minutes} min
+              <div className="font-semibold text-gray-900">{selectedTariff.name}</div>
+              <div className="text-sm text-gray-500">
+                {selectedTariff.duration_minutes} minutos
               </div>
             </div>
-            <div className="text-right font-medium text-slate-800">
+            <div className="text-right text-xl font-semibold text-emerald-600">
               {selectedTariff.price_cents
                 ? `${(selectedTariff.price_cents / 100).toFixed(2)}€`
                 : 'Gratis'}
@@ -182,69 +195,76 @@ export default function EditAppointmentPage() {
       )}
 
       {/* Fecha */}
-      <div className="mb-4 flex flex-wrap items-end gap-3">
-        <div>
-          <label className="block text-sm font-medium">Fecha</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="mt-1 border rounded px-3 py-2"
-          />
+      <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-xl shadow-emerald-50">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Selecciona fecha y horario</h2>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Fecha</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-gray-900 shadow-sm transition focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            />
+          </div>
+          <button
+            onClick={fetchSlots}
+            disabled={loadingSlots}
+            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-emerald-100 bg-white/80 px-5 py-2.5 text-sm font-semibold text-emerald-900 shadow-lg shadow-emerald-100 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-lime-400 opacity-95" aria-hidden="true" />
+            <span className="relative text-white">
+              {loadingSlots ? 'Buscando…' : 'Ver horarios'}
+            </span>
+          </button>
         </div>
-        <button
-          onClick={fetchSlots}
-          disabled={loadingSlots}
-          className="px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 border text-slate-700"
-        >
-          {loadingSlots ? 'Buscando...' : 'Ver horarios'}
-        </button>
-      </div>
 
-      {/* Slots */}
-      <div className="space-y-2">
-        {availableSlots.length > 0 ? (
-          availableSlots.map((slot) => (
-            <div
-              key={slot.start_at}
-              onClick={() => !slot.is_booked && setSelectedSlot(slot)}
-              className={`p-3 rounded-lg border transition cursor-pointer ${
-                slot.is_booked
-                  ? 'bg-red-50 border-red-200 opacity-60 cursor-not-allowed'
-                  : selectedSlot?.start_at === slot.start_at
-                  ? 'bg-emerald-100 border-emerald-300 ring-2 ring-emerald-200'
-                  : 'hover:bg-sky-50'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <span>{formatTimeRange(slot)}</span>
+        {/* Slots */}
+        <div className="mt-6 space-y-3">
+          {availableSlots.length > 0 ? (
+            availableSlots.map((slot) => (
+              <div
+                key={slot.start_at}
+                onClick={() => !slot.is_booked && setSelectedSlot(slot)}
+                className={`flex items-center justify-between rounded-2xl border p-4 transition ${
+                  slot.is_booked
+                    ? 'cursor-not-allowed border-red-100 bg-red-50/50 opacity-60'
+                    : selectedSlot?.start_at === slot.start_at
+                    ? 'cursor-pointer border-emerald-200 bg-emerald-50/80 shadow-md shadow-emerald-100 ring-2 ring-emerald-200'
+                    : 'cursor-pointer border-gray-200 bg-white hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-emerald-50/30'
+                }`}
+              >
+                <span className="font-semibold text-gray-900">{formatTimeRange(slot)}</span>
                 {slot.is_booked ? (
-                  <span className="text-xs text-red-500 font-medium">Ocupado</span>
+                  <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600">Ocupado</span>
                 ) : selectedSlot?.start_at === slot.start_at ? (
-                  <span className="text-xs text-emerald-600 font-medium">Seleccionado</span>
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">✓ Seleccionado</span>
                 ) : (
-                  <span className="text-xs text-slate-500">Disponible</span>
+                  <span className="text-sm text-gray-500">Disponible</span>
                 )}
               </div>
-            </div>
-          ))
-        ) : (
-          date && (
-            <p className="text-sm text-slate-500 mt-4">
-              No hay horarios disponibles.
-            </p>
-          )
-        )}
+            ))
+          ) : (
+            date && (
+              <p className="py-8 text-center text-sm text-gray-500">
+                No hay horarios disponibles para esta fecha.
+              </p>
+            )
+          )}
+        </div>
       </div>
 
       {selectedSlot && (
-        <div className="mt-6 flex justify-end">
+        <div className="flex justify-end">
           <button
             onClick={handleConfirmEdit}
             disabled={confirming}
-            className="bg-emerald-600 text-white px-5 py-2 rounded-lg hover:bg-emerald-700 disabled:bg-gray-300"
+            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-emerald-100 px-6 py-3 text-sm font-semibold shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {confirming ? 'Actualizando...' : 'Guardar cambios'}
+            <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-lime-400" />
+            <span className="relative text-white">
+              {confirming ? 'Actualizando…' : 'Guardar cambios'}
+            </span>
           </button>
         </div>
       )}

@@ -81,7 +81,8 @@ export default function NavBar() {
 
   const staffLinks = [
     { to: '/stock', label: 'Stock' },
-    { to: '/orders', label: 'Pedidos' }
+    { to: '/orders', label: 'Pedidos' },
+    { to: '/clients', label: 'Clientes' }
   ]
 
   return (
