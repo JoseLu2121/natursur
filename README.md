@@ -22,7 +22,7 @@ node --version
 npm --version
 ```
 
-## 🔧 Instalación y configuración local
+##  Instalación y configuración local
 
 Sigue estos pasos para levantar la aplicación en tu entorno local:
 
@@ -52,7 +52,7 @@ O con yarn:
 yarn dev
 ```
 
-## 🗄️ Backend
+## Backend
 
 El backend de la aplicación está desarrollado y desplegado en [Supabase](https://supabase.com/), que proporciona:
 
